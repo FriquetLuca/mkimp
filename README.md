@@ -234,7 +234,7 @@ graph TD;
 ```
 ```
 
-> Rendering Mermaid is **up to you** — MkImp only passes it through.
+Rendering Mermaid is **up to you** — MkImp only passes it through.
 
 ---
 
