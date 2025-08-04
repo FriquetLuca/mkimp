@@ -35,10 +35,10 @@ npm install mkimp
 import { MkImp } from "mkimp";
 
 const mkimp = new MkImp({
-  include(loc, from, to) {
+  async include(loc, from, to) {
     return `${loc} from [${from}] to [${to}]`;
   },
-  includeCode(loc, from, to) {
+  async includeCode(loc, from, to) {
     return `${loc} from [${from}] to [${to}]`;
   },
 });
@@ -55,9 +55,9 @@ interface MkImpOptions {
   tabulation?: number; // Number of spaces per indentation level (default: 4)
   metadata?: Map<string, string>; // Front matter metadata (won't override existing entries)
   emojis?: Record<string, EmojiRecord>; // Custom emoji definitions
-  frontMatter?: (content: string) => unknown; // Custom front matter parser (default: JSON)
-  include?: (location: string, from?: number, to?: number) => string; // INCLUDE block handler
-  includeCode?: (location: string, from?: number, to?: number) => string | undefined; // INCLUDECODE block handler
+  frontMatter?: (content: string) => Promise<unknown>; // Custom front matter parser (default: JSON)
+  include?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // INCLUDE block handler
+  includeCode?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // INCLUDECODE block handler
   withSection?: boolean; // Enable section-based rendering (default: false)
   renderTarget?: RenderTarget; // Output format (default: "raw")
 }
@@ -78,9 +78,9 @@ type EmojiRecord =
 class MkImp {
   constructor(options?: MkImpOptions);
 
-  ast(markdown: string): RootToken;      // Generate AST
-  render(root: RootToken): string;       // Render HTML from AST
-  parse(markdown: string): string;       // Directly parse markdown to HTML
+  ast(markdown: string): Promise<RootToken>;  // Generate AST
+  render(root: RootToken): string;            // Render HTML from AST
+  parse(markdown: string): Promise<string>;   // Directly parse markdown to HTML
 }
 ```
 
