@@ -4,6 +4,22 @@
     "description": "Write markdown like a programmer should be able to",
     "license": "MIT",
     "author": "FriquetLuca",
+    "keywords": [
+        "markdown",
+        "md",
+        "include",
+        "import",
+        "template",
+        "programming",
+        "modular",
+        "inject",
+        "documentation"
+    ],
+    "homepage": "https://github.com/FriquetLuca/mkimp",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FriquetLuca/mkimp.git"
+    },
     "type": "module",
     "main": "./dist/index.cjs.js",
     "module": "./dist/index.esm.js",
