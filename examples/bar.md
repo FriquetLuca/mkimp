@@ -1,6 +1,8 @@
 ---     
-_title: Hello, world!
-author: John Doe
+{
+    "_title": "Hello, world!",
+    "author": "John Doe"
+}
 ---     
 
 # {{title}}

@@ -196,7 +196,7 @@ export class BlockTokenizer {
                             .map((l) => l.content)
                             .join("\n")
                         try {
-                            if (this.lexer.frontMatter) {
+                            if (this.lexer.frontMatter !== undefined) {
                                 const json = await this.lexer.frontMatter(meta)
                                 flattenJSONintoMap(json, this.lexer.metadata)
                                 this.line = line

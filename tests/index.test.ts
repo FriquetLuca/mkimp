@@ -33,10 +33,8 @@ test("include", async () => {
         },
     })
     const location = path.resolve(__dirname, "../examples/foo.md")
-    console.log(location)
     const fileContent = fs.readFileSync(location, "utf-8")
     const ast = await mkimp.ast(fileContent)
     const result = mkimp.render(ast)
-    console.log(result)
     expect(result.length).toBeGreaterThan(0)
 })

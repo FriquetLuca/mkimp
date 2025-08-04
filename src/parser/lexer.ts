@@ -151,6 +151,7 @@ export class Lexer {
                 metadata: options?.metadata,
                 tabulation: options?.tabulation,
                 emojis: options?.emojis,
+                frontMatter: options?.frontMatter,
                 include: options?.include,
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
@@ -186,6 +187,7 @@ export class Lexer {
             new Lexer({
                 metadata: options?.metadata,
                 tabulation: options?.tabulation,
+                frontMatter: options?.frontMatter,
                 include: options?.include,
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
