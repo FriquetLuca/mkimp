@@ -4,18 +4,18 @@ Author: Josh Temple <josh@spectacles.dev>
 Description: Language definition for LookML (Looker's dependency language).
 */
 
-import { type HLJSApi } from "highlight.js";
+import { type HLJSApi } from "highlight.js"
 
 export function lookml(hljs: HLJSApi) {
-    const LITERALS = ["yes", "no"];
-    const KEY_MODE = { scope: "keyword", match: /\w+\s*:/, relevance: 0 };
+    const LITERALS = ["yes", "no"]
+    const KEY_MODE = { scope: "keyword", match: /\w+\s*:/, relevance: 0 }
     const LIQUID_MODE = {
         scope: "template-tag",
         variants: [
             { begin: /\{%/, end: /%\}/ },
             { begin: /\{{2}/, end: /\}{2}/ },
         ],
-    };
+    }
     const BLOCK_MODE = {
         scope: "block",
         begin: [/\w+\s*:\s*/, /\+?/, /(\w+\s*)?/, /\{(?![%\{])/],
@@ -51,7 +51,7 @@ export function lookml(hljs: HLJSApi) {
             },
             KEY_MODE,
         ],
-    };
+    }
     return {
         name: "LookML",
         contains: [
@@ -61,5 +61,5 @@ export function lookml(hljs: HLJSApi) {
             KEY_MODE,
             LIQUID_MODE,
         ],
-    };
+    }
 }

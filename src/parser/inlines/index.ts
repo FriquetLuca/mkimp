@@ -1,94 +1,102 @@
-import { type Lexer } from "../lexer";
-import { type MdToken } from "../utils";
-import { parseHtmlInline } from "../html";
-import { ENDING_STARS, ESCAPING_CHARS, INLINE_KIND_CHARS, matchLink, matchReferenceLink, parseAutolink } from "./utils";
+import { type Lexer } from "../lexer"
+import { type MdToken } from "../utils"
+import { parseHtmlInline } from "../html"
+import {
+    ENDING_STARS,
+    ESCAPING_CHARS,
+    INLINE_KIND_CHARS,
+    matchLink,
+    matchReferenceLink,
+    parseAutolink,
+} from "./utils"
 
 interface TextToken {
-    type: "text";
-    text: string;
+    type: "text"
+    text: string
 }
 
 interface BoldToken {
-    type: "bold";
-    tokens: MdToken[];
+    type: "bold"
+    tokens: MdToken[]
 }
 
 interface UnderlineToken {
-    type: "underline";
-    tokens: MdToken[];
+    type: "underline"
+    tokens: MdToken[]
 }
 
 interface ItalicToken {
-    type: "italic";
-    tokens: MdToken[];
+    type: "italic"
+    tokens: MdToken[]
 }
 
 interface HighlightToken {
-    type: "highlight";
-    tokens: MdToken[];
+    type: "highlight"
+    tokens: MdToken[]
 }
 
 interface StrikethroughToken {
-    type: "strikethrough";
-    tokens: MdToken[];
+    type: "strikethrough"
+    tokens: MdToken[]
 }
 
 interface OverlineToken {
-    type: "overline";
-    tokens: MdToken[];
+    type: "overline"
+    tokens: MdToken[]
 }
 
 interface EmojiToken {
-    type: "emoji";
-    name: string;
+    type: "emoji"
+    name: string
 }
 
 interface NewLineToken {
-    type: "newline";
+    type: "newline"
 }
 
 interface FootnoteRefToken {
-    type: "footnoteRef";
-    ref: string;
+    type: "footnoteRef"
+    ref: string
 }
 
 interface ImageToken {
-    type: "image";
-    alt: string;
-    href: string;
-    title: string | undefined;
+    type: "image"
+    alt: string
+    href: string
+    title: string | undefined
 }
 
 interface LinkToken {
-    type: "link";
-    label: MdToken[];
-    href: string;
-    title: string | undefined;
+    type: "link"
+    label: MdToken[]
+    href: string
+    title: string | undefined
 }
 
 interface RefLinkToken {
-    type: "reflink";
-    label: MdToken[];
-    ref: string;
+    type: "reflink"
+    label: MdToken[]
+    ref: string
 }
 
 interface CodespanToken {
-    type: "codespan";
-    text: string;
+    type: "codespan"
+    text: string
 }
 
 interface MetadataToken {
-    type: "metadata";
-    name: string;
+    type: "metadata"
+    name: string
 }
 
 interface YoutubeToken {
-    type: "youtubeEmbed";
-    title: string;
-    attributes: Record<string, string>;
+    type: "youtubeEmbed"
+    title: string
+    attributes: Record<string, string>
 }
 
-export type MdInlineToken = TextToken
+export type MdInlineToken =
+    | TextToken
     | YoutubeToken
     | OverlineToken
     | MetadataToken
@@ -103,621 +111,728 @@ export type MdInlineToken = TextToken
     | EmojiToken
     | UnderlineToken
     | BoldToken
-    | ItalicToken;
+    | ItalicToken
 
 interface InlineTokenizerOptions {
-    parent?: InlineTokenizer;
-    lexer: Lexer;
-    content: string;
-    linkLevel?: number;
+    parent?: InlineTokenizer
+    lexer: Lexer
+    content: string
+    linkLevel?: number
 }
 
 export class InlineTokenizer {
-    lexer: Lexer;
-    parent: InlineTokenizer | undefined;
-    index: number = 0;
-    content: string;
-    textBuffer: string = "";
-    linkLevel: number;
+    lexer: Lexer
+    parent: InlineTokenizer | undefined
+    index: number = 0
+    content: string
+    textBuffer: string = ""
+    linkLevel: number
     constructor(options: InlineTokenizerOptions) {
-        this.content = options.content;
-        this.lexer = options.lexer;
-        this.linkLevel = options?.linkLevel??0;
+        this.content = options.content
+        this.lexer = options.lexer
+        this.linkLevel = options?.linkLevel ?? 0
     }
     addLinkLevel(n: number) {
-        this.linkLevel += n;
-        if(this.parent !== undefined) {
-            this.parent.addLinkLevel(n);
+        this.linkLevel += n
+        if (this.parent !== undefined) {
+            this.parent.addLinkLevel(n)
         }
     }
     #cleanBuffer(result: MdToken[]) {
-        if(this.textBuffer.length > 0) {
+        if (this.textBuffer.length > 0) {
             result.push({
                 type: "text",
                 text: this.textBuffer,
-            });
-            this.textBuffer = "";
+            })
+            this.textBuffer = ""
         }
     }
     #extractBuffer() {
-        const buffer = this.textBuffer;
-        this.textBuffer = "";
-        return buffer;
+        const buffer = this.textBuffer
+        this.textBuffer = ""
+        return buffer
     }
     #symbolCounter(currentSymbol: string, maxCount: number) {
-        let count = 0;
-        while(count < maxCount && this.index < this.content.length) {
-            if(this.content[this.index] !== currentSymbol) {
-                break;
+        let count = 0
+        while (count < maxCount && this.index < this.content.length) {
+            if (this.content[this.index] !== currentSymbol) {
+                break
             }
-            count++;
-            this.index++;
+            count++
+            this.index++
         }
-        return count;
+        return count
     }
     tokenize(stop?: (i: number, src: string) => boolean): MdToken[] {
-        const result: MdToken[] = [];
-        while(this.index < this.content.length) {
-            if(
-                this.content[this.index] === "\\"
-                && this.index + 1 < this.content.length
-                && ESCAPING_CHARS.has(this.content[this.index + 1])
+        const result: MdToken[] = []
+        while (this.index < this.content.length) {
+            if (
+                this.content[this.index] === "\\" &&
+                this.index + 1 < this.content.length &&
+                ESCAPING_CHARS.has(this.content[this.index + 1])
             ) {
-                this.textBuffer += this.content[this.index + 1];
-                this.index += 2;
-                continue;
+                this.textBuffer += this.content[this.index + 1]
+                this.index += 2
+                continue
             }
-            if(stop && stop(this.index, this.content)) {
-                break;
+            if (stop && stop(this.index, this.content)) {
+                break
             }
-            const currentSymbol = this.content[this.index];
-            switch(currentSymbol) {
+            const currentSymbol = this.content[this.index]
+            switch (currentSymbol) {
                 case "\r":
-                    this.index++;
-                    break;
+                    this.index++
+                    break
                 case "\n":
-                    this.#cleanBuffer(result);
-                    this.index++;
+                    this.#cleanBuffer(result)
+                    this.index++
                     result.push({
                         type: "newline",
-                    });
-                    break;
+                    })
+                    break
                 case "{":
-                    if(
-                        this.index + 1 < this.content.length
-                        && this.content[this.index + 1] === "{"
+                    if (
+                        this.index + 1 < this.content.length &&
+                        this.content[this.index + 1] === "{"
                     ) {
-                        const lastIndex = this.index + 1;
-                        this.index += 2;
-                        let endMeta = false;
-                        while(this.index < this.content.length) {
-                            if(
-                                this.content[this.index] === "\n"
-                                || (this.content[this.index] === "}"
-                                && this.index + 1 < this.content.length
-                                && this.content[this.index + 1] === "}")
+                        const lastIndex = this.index + 1
+                        this.index += 2
+                        let endMeta = false
+                        while (this.index < this.content.length) {
+                            if (
+                                this.content[this.index] === "\n" ||
+                                (this.content[this.index] === "}" &&
+                                    this.index + 1 < this.content.length &&
+                                    this.content[this.index + 1] === "}")
                             ) {
-                                endMeta = this.content[this.index] !== "\n";
-                                break;
+                                endMeta = this.content[this.index] !== "\n"
+                                break
                             }
-                            this.index++;
+                            this.index++
                         }
-                        if(endMeta) {
-                            this.#cleanBuffer(result);
+                        if (endMeta) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "metadata",
-                                name: this.content.slice(lastIndex + 1, this.index),
-                            });
-                            this.index += 2;
+                                name: this.content.slice(
+                                    lastIndex + 1,
+                                    this.index
+                                ),
+                            })
+                            this.index += 2
                         } else {
-                            this.textBuffer += currentSymbol;
-                            this.index = lastIndex;
+                            this.textBuffer += currentSymbol
+                            this.index = lastIndex
                         }
-
                     } else {
-                        this.textBuffer += currentSymbol;
-                        this.index++;
+                        this.textBuffer += currentSymbol
+                        this.index++
                     }
-                    break;
+                    break
                 case "`":
-                    let backtickCount = 0;
-                    while(this.index < this.content.length) {
-                        if(this.content[this.index] !== "`") {
-                            break;
+                    let backtickCount = 0
+                    while (this.index < this.content.length) {
+                        if (this.content[this.index] !== "`") {
+                            break
                         }
-                        backtickCount++;
-                        this.index++;
+                        backtickCount++
+                        this.index++
                     }
-                    const startBackticksContent = this.index;
-                    let closeBackticksCount = backtickCount;
-                    while(this.index < this.content.length) {
-                        if(this.content[this.index] === "\n") {
-                            break;
+                    const startBackticksContent = this.index
+                    let closeBackticksCount = backtickCount
+                    while (this.index < this.content.length) {
+                        if (this.content[this.index] === "\n") {
+                            break
                         }
-                        if(this.content[this.index] === "`") {
-                            while(this.index < this.content.length) {
-                                if(this.content[this.index] !== "`") {
-                                    break;
+                        if (this.content[this.index] === "`") {
+                            while (this.index < this.content.length) {
+                                if (this.content[this.index] !== "`") {
+                                    break
                                 }
-                                closeBackticksCount--;
-                                this.index++;
+                                closeBackticksCount--
+                                this.index++
                             }
-                            if(closeBackticksCount === 0) {
-                                break;
+                            if (closeBackticksCount === 0) {
+                                break
                             } else {
-                                closeBackticksCount = backtickCount;
-                                continue;
+                                closeBackticksCount = backtickCount
+                                continue
                             }
                         }
-                        this.index++;
+                        this.index++
                     }
-                    if(closeBackticksCount === 0) {
-                        this.#cleanBuffer(result);
-                        const content = this.content.slice(startBackticksContent, this.index - backtickCount);
+                    if (closeBackticksCount === 0) {
+                        this.#cleanBuffer(result)
+                        const content = this.content.slice(
+                            startBackticksContent,
+                            this.index - backtickCount
+                        )
                         result.push({
                             type: "codespan",
                             text: content,
-                        });
+                        })
                     } else {
-                        this.textBuffer += this.content.slice(startBackticksContent - backtickCount, startBackticksContent),
-                        this.index = startBackticksContent;
+                        ;((this.textBuffer += this.content.slice(
+                            startBackticksContent - backtickCount,
+                            startBackticksContent
+                        )),
+                            (this.index = startBackticksContent))
                     }
-                    break;
+                    break
                 case "!":
-                    if(this.index + 1 < this.content.length && this.content[this.index + 1] === "[") {
-                        const link = matchLink(this.content, ++this.index);
-                        if(link !== null) {
-                            this.#cleanBuffer(result);
+                    if (
+                        this.index + 1 < this.content.length &&
+                        this.content[this.index + 1] === "["
+                    ) {
+                        const link = matchLink(this.content, ++this.index)
+                        if (link !== null) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "image",
                                 alt: link.label,
-                                href: link.href??"",
+                                href: link.href ?? "",
                                 title: link.title,
-                            });
-                            this.index = link.end;
+                            })
+                            this.index = link.end
                         } else {
-                            this.textBuffer += "!";
+                            this.textBuffer += "!"
                         }
                     } else {
-                        const match = /^!YOUTUBE\[(.*?)\]\{(.*?)\}/.exec(this.content.slice(this.index));
-                        if(match !== null) {
-                            const [raw, text, attrString] = match;
-                            const attrs: Record<string, string> = {};
+                        const match = /^!YOUTUBE\[(.*?)\]\{(.*?)\}/.exec(
+                            this.content.slice(this.index)
+                        )
+                        if (match !== null) {
+                            const [raw, text, attrString] = match
+                            const attrs: Record<string, string> = {}
 
                             // Parse key="value" pairs
-                            attrString.match(/(\w+)="(.*?)"/g)?.forEach(pair => {
-                                const [key, val] = pair.split('=');
-                                if (key && val) {
-                                    attrs[key] = val.replace(/^"|"$/g, '');
-                                }
-                            });
+                            attrString
+                                .match(/(\w+)="(.*?)"/g)
+                                ?.forEach((pair) => {
+                                    const [key, val] = pair.split("=")
+                                    if (key && val) {
+                                        attrs[key] = val.replace(/^"|"$/g, "")
+                                    }
+                                })
 
                             if (!attrs.vid) {
-                                this.textBuffer += currentSymbol;
-                                this.index++;
+                                this.textBuffer += currentSymbol
+                                this.index++
                             } else {
-                                this.#cleanBuffer(result);
+                                this.#cleanBuffer(result)
                                 result.push({
                                     type: "youtubeEmbed",
                                     title: text,
                                     attributes: attrs,
                                 })
-                                this.index += raw.length;
+                                this.index += raw.length
                             }
                         } else {
-                            this.textBuffer += currentSymbol;
-                            this.index++;
+                            this.textBuffer += currentSymbol
+                            this.index++
                         }
                     }
-                    break;
+                    break
                 case "[":
-                    if(this.linkLevel < 1) {
-                        const link = matchLink(this.content, this.index);
-                        if(link !== null) {
-                            this.#cleanBuffer(result);
+                    if (this.linkLevel < 1) {
+                        const link = matchLink(this.content, this.index)
+                        if (link !== null) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "link",
                                 label: this.lexer.inlineLex(link.label),
-                                href: link.href??"",
+                                href: link.href ?? "",
                                 title: link.title,
-                            });
-                            this.index = link.end;
+                            })
+                            this.index = link.end
                         } else {
-                            const refLink = matchReferenceLink(this.content, this.index);
-                            if(refLink) {
-                                this.#cleanBuffer(result);
-                                if(refLink.footnote) {
+                            const refLink = matchReferenceLink(
+                                this.content,
+                                this.index
+                            )
+                            if (refLink) {
+                                this.#cleanBuffer(result)
+                                if (refLink.footnote) {
                                     result.push({
                                         type: "footnoteRef",
                                         ref: refLink.ref,
-                                    });
-                                    if (!this.lexer.footnoteIndexMap.has(refLink.ref)) {
-                                        const nextIndex = this.lexer.footnoteIndexMap.size + 1;
-                                        this.lexer.footnoteIndexMap.set(refLink.ref, nextIndex);
-                                        this.lexer.footnoteRef.set(nextIndex, refLink.ref);
+                                    })
+                                    if (
+                                        !this.lexer.footnoteIndexMap.has(
+                                            refLink.ref
+                                        )
+                                    ) {
+                                        const nextIndex =
+                                            this.lexer.footnoteIndexMap.size + 1
+                                        this.lexer.footnoteIndexMap.set(
+                                            refLink.ref,
+                                            nextIndex
+                                        )
+                                        this.lexer.footnoteRef.set(
+                                            nextIndex,
+                                            refLink.ref
+                                        )
                                     }
                                 } else {
                                     result.push({
                                         type: "reflink",
-                                        label: this.lexer.inlineLex(refLink.label),
+                                        label: this.lexer.inlineLex(
+                                            refLink.label
+                                        ),
                                         ref: refLink.ref,
-                                    });
+                                    })
                                 }
-                                this.index = refLink.end;
+                                this.index = refLink.end
                             } else {
-                                this.textBuffer += "[";
-                                this.index++;
+                                this.textBuffer += "["
+                                this.index++
                             }
                         }
                     } else {
-                        const refLink = matchReferenceLink(this.content, this.index);
-                        if(refLink !== null && refLink.footnote) {
-                            this.#cleanBuffer(result);
+                        const refLink = matchReferenceLink(
+                            this.content,
+                            this.index
+                        )
+                        if (refLink !== null && refLink.footnote) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "footnoteRef",
                                 ref: refLink.ref,
-                            });
+                            })
                             if (!this.lexer.footnoteIndexMap.has(refLink.ref)) {
-                                const nextIndex = this.lexer.footnoteIndexMap.size + 1;
-                                this.lexer.footnoteIndexMap.set(refLink.ref, nextIndex);
-                                this.lexer.footnoteRef.set(nextIndex, refLink.ref);
+                                const nextIndex =
+                                    this.lexer.footnoteIndexMap.size + 1
+                                this.lexer.footnoteIndexMap.set(
+                                    refLink.ref,
+                                    nextIndex
+                                )
+                                this.lexer.footnoteRef.set(
+                                    nextIndex,
+                                    refLink.ref
+                                )
                             }
-                            this.index = refLink.end;
+                            this.index = refLink.end
                         } else {
-                            this.textBuffer += "[";
-                            this.index++;
+                            this.textBuffer += "["
+                            this.index++
                         }
                     }
-                    break;
+                    break
                 case "$":
-                    if(this.index + 1 < this.content.length && this.content[this.index + 1] === "$") {
-                        this.index += 2;
-                        const startIndex = this.index;
-                        let hasEnd = false;
-                        while(this.index < this.content.length) {
-                            if(
-                                this.content[this.index] === "\\"
-                                && this.index + 1 < this.content.length
-                                && ESCAPING_CHARS.has(this.content[this.index + 1])
+                    if (
+                        this.index + 1 < this.content.length &&
+                        this.content[this.index + 1] === "$"
+                    ) {
+                        this.index += 2
+                        const startIndex = this.index
+                        let hasEnd = false
+                        while (this.index < this.content.length) {
+                            if (
+                                this.content[this.index] === "\\" &&
+                                this.index + 1 < this.content.length &&
+                                ESCAPING_CHARS.has(this.content[this.index + 1])
                             ) {
-                                this.index += 2;
-                                continue;
+                                this.index += 2
+                                continue
                             }
-                            if(
-                                this.content[this.index] === "$"
-                                && this.index + 1 < this.content.length
-                                && this.content[this.index + 1] === "$"
+                            if (
+                                this.content[this.index] === "$" &&
+                                this.index + 1 < this.content.length &&
+                                this.content[this.index + 1] === "$"
                             ) {
-                                hasEnd = true;
-                                break;
+                                hasEnd = true
+                                break
                             }
-                            this.index++;
+                            this.index++
                         }
-                        if(hasEnd) {
+                        if (hasEnd) {
                             result.push({
                                 type: "tex",
                                 inline: true,
                                 displayMode: true,
-                                text: this.content.slice(startIndex, this.index),
-                            });
-                            this.index += 2;
+                                text: this.content.slice(
+                                    startIndex,
+                                    this.index
+                                ),
+                            })
+                            this.index += 2
                         } else {
-                            this.textBuffer += currentSymbol;
-                            this.index = startIndex - 1;
+                            this.textBuffer += currentSymbol
+                            this.index = startIndex - 1
                         }
                     } else {
-                        const startIndex = ++this.index;
-                        let hasEnd = false;
-                        while(this.index < this.content.length) {
-                            if(
-                                this.content[this.index] === "\\"
-                                && this.index + 1 < this.content.length
-                                && ESCAPING_CHARS.has(this.content[this.index + 1])
+                        const startIndex = ++this.index
+                        let hasEnd = false
+                        while (this.index < this.content.length) {
+                            if (
+                                this.content[this.index] === "\\" &&
+                                this.index + 1 < this.content.length &&
+                                ESCAPING_CHARS.has(this.content[this.index + 1])
                             ) {
-                                this.index += 2;
-                                continue;
+                                this.index += 2
+                                continue
                             }
-                            if(this.content[this.index] === "$") {
-                                hasEnd = true;
-                                break;
+                            if (this.content[this.index] === "$") {
+                                hasEnd = true
+                                break
                             }
-                            this.index++;
+                            this.index++
                         }
-                        if(hasEnd) {
-                            this.#cleanBuffer(result);
+                        if (hasEnd) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "tex",
                                 inline: true,
                                 displayMode: false,
-                                text: this.content.slice(startIndex, this.index),
-                            });
-                            this.index++;
+                                text: this.content.slice(
+                                    startIndex,
+                                    this.index
+                                ),
+                            })
+                            this.index++
                         } else {
-                            this.textBuffer += currentSymbol;
-                            this.index = startIndex;
+                            this.textBuffer += currentSymbol
+                            this.index = startIndex
                         }
                     }
-                    break;
+                    break
                 case "<":
-                    if(this.linkLevel < 1) {
-                        const autolink = parseAutolink(this.content, this.index);
-                        if(autolink !== null) {
-                            this.#cleanBuffer(result);
-                            this.index = autolink.end;
+                    if (this.linkLevel < 1) {
+                        const autolink = parseAutolink(this.content, this.index)
+                        if (autolink !== null) {
+                            this.#cleanBuffer(result)
+                            this.index = autolink.end
                             result.push({
                                 type: "link",
                                 label: [
                                     {
                                         type: "text",
                                         text: autolink.content,
-                                    }
+                                    },
                                 ],
                                 href: autolink.url,
                                 title: undefined,
-                            });
+                            })
                         } else {
-                            const html = parseHtmlInline(this.content, this.index, this);
-                            if(html !== null) {
-                                this.#cleanBuffer(result);
+                            const html = parseHtmlInline(
+                                this.content,
+                                this.index,
+                                this
+                            )
+                            if (html !== null) {
+                                this.#cleanBuffer(result)
                                 result.push({
                                     type: "html",
                                     content: html.content,
-                                });
-                                this.index += html.content.length;
+                                })
+                                this.index += html.content.length
                             } else {
-                                this.textBuffer += currentSymbol;
-                                this.index++;
+                                this.textBuffer += currentSymbol
+                                this.index++
                             }
                         }
                     } else {
-                        const html = parseHtmlInline(this.content, this.index, this);
-                        if(html !== null) {
-                            this.#cleanBuffer(result);
+                        const html = parseHtmlInline(
+                            this.content,
+                            this.index,
+                            this
+                        )
+                        if (html !== null) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "html",
                                 content: html.content,
-                            });
-                            this.index += html.content.length;
+                            })
+                            this.index += html.content.length
                         } else {
-                            this.textBuffer += currentSymbol;
-                            this.index++;
+                            this.textBuffer += currentSymbol
+                            this.index++
                         }
                     }
-                    break;
+                    break
                 case ">":
-                    if(this.index + 1 < this.content.length && this.content[this.index + 1] === "!") {
-                        const buffer = this.#extractBuffer();
-                        const nextIndex = this.index + 1;
-                        this.index += 2;
-                        const tokens = this.tokenize((i, src) => src[i] === "\n" || (i + 1 < src.length && src[i] === "!" && src[i + 1] === "<"));
-                        if(
-                            this.index < this.content.length
-                            && this.content[this.index] === "!"
-                            && this.index + 1 < this.content.length
-                            && this.content[this.index + 1] === "<"
+                    if (
+                        this.index + 1 < this.content.length &&
+                        this.content[this.index + 1] === "!"
+                    ) {
+                        const buffer = this.#extractBuffer()
+                        const nextIndex = this.index + 1
+                        this.index += 2
+                        const tokens = this.tokenize(
+                            (i, src) =>
+                                src[i] === "\n" ||
+                                (i + 1 < src.length &&
+                                    src[i] === "!" &&
+                                    src[i + 1] === "<")
+                        )
+                        if (
+                            this.index < this.content.length &&
+                            this.content[this.index] === "!" &&
+                            this.index + 1 < this.content.length &&
+                            this.content[this.index + 1] === "<"
                         ) {
-                            this.index += 2;
-                            this.textBuffer = buffer;
-                            this.#cleanBuffer(result);
+                            this.index += 2
+                            this.textBuffer = buffer
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "spoiler",
                                 title: [],
                                 inline: true,
                                 tokens,
-                            });
+                            })
                         } else {
-                            this.index = nextIndex;
-                            this.textBuffer = `${buffer}>`;
+                            this.index = nextIndex
+                            this.textBuffer = `${buffer}>`
                         }
                     } else {
-                        this.textBuffer += currentSymbol;
-                        this.index++;
+                        this.textBuffer += currentSymbol
+                        this.index++
                     }
-                    break;
+                    break
                 case ":":
-                    const from = ++this.index;
-                    let isFound = false;
-                    while(this.index < this.content.length) {
-                        isFound = this.content[this.index] === currentSymbol;
-                        if(
-                            isFound
-                            || this.content[this.index] === "\\"
-                            || this.content[this.index] === "\n"
+                    const from = ++this.index
+                    let isFound = false
+                    while (this.index < this.content.length) {
+                        isFound = this.content[this.index] === currentSymbol
+                        if (
+                            isFound ||
+                            this.content[this.index] === "\\" ||
+                            this.content[this.index] === "\n"
                         ) {
-                            break;
+                            break
                         }
-                        this.index++;
+                        this.index++
                     }
-                    if(isFound) {
-                        const name = this.content.slice(from, this.index);
-                        if(this.lexer.emojis[name] !== undefined) {
-                            this.#cleanBuffer(result);
+                    if (isFound) {
+                        const name = this.content.slice(from, this.index)
+                        if (this.lexer.emojis[name] !== undefined) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "emoji",
                                 name,
-                            });
-                            this.index++;
+                            })
+                            this.index++
                         } else {
-                            this.textBuffer += currentSymbol;
-                            this.index = from;
+                            this.textBuffer += currentSymbol
+                            this.index = from
                         }
                     } else {
-                        this.textBuffer += currentSymbol;
-                        this.index = from;
+                        this.textBuffer += currentSymbol
+                        this.index = from
                     }
-                    break;
+                    break
                 case "=":
                 case "~":
                 case "|":
                 case "^":
-                    const startDualIndex = this.index + 1;
-                    if(this.#symbolCounter(currentSymbol, 2) === 2) {
-                        const buffer = this.#extractBuffer();
-                        const tokens = this.tokenize(ENDING_STARS.get("double")!(currentSymbol));
-                        if(
-                            this.index < this.content.length
-                            && this.content[this.index] === currentSymbol
-                            && this.index + 1 < this.content.length
-                            && this.content[this.index + 1] === currentSymbol
+                    const startDualIndex = this.index + 1
+                    if (this.#symbolCounter(currentSymbol, 2) === 2) {
+                        const buffer = this.#extractBuffer()
+                        const tokens = this.tokenize(
+                            ENDING_STARS.get("double")!(currentSymbol)
+                        )
+                        if (
+                            this.index < this.content.length &&
+                            this.content[this.index] === currentSymbol &&
+                            this.index + 1 < this.content.length &&
+                            this.content[this.index + 1] === currentSymbol
                         ) {
-                            this.textBuffer = buffer;
-                            this.#cleanBuffer(result);
-                            if(currentSymbol === "|") {
+                            this.textBuffer = buffer
+                            this.#cleanBuffer(result)
+                            if (currentSymbol === "|") {
                                 result.push({
                                     type: "spoiler",
                                     title: [],
                                     inline: true,
                                     tokens,
-                                });
+                                })
                             } else {
-                                const type = currentSymbol === "~"
-                                    ? "strikethrough"
-                                    : currentSymbol === "="
-                                        ? "highlight"
-                                        : "overline";
+                                const type =
+                                    currentSymbol === "~"
+                                        ? "strikethrough"
+                                        : currentSymbol === "="
+                                          ? "highlight"
+                                          : "overline"
                                 result.push({
                                     type,
                                     tokens,
-                                });
+                                })
                             }
-                            this.index += 2;
+                            this.index += 2
                         } else {
-                            this.textBuffer = `${buffer}${currentSymbol}`;
-                            this.index = startDualIndex;
+                            this.textBuffer = `${buffer}${currentSymbol}`
+                            this.index = startDualIndex
                         }
                     } else {
-                        this.textBuffer += currentSymbol;
-                        this.index = startDualIndex;
+                        this.textBuffer += currentSymbol
+                        this.index = startDualIndex
                     }
-                    break;
+                    break
                 case "_":
                 case "*":
-                    const startStarIndex = this.index + 1;
-                    const buffer = this.#extractBuffer();
-                    let count = this.#symbolCounter(currentSymbol, 3);
-                    if(count === 3) { // bold italic
-                        const tokens = this.tokenize((i, src) => src[i] === currentSymbol);
-                        while(count > 0 && this.index < this.content.length) {
-                            if(this.content[this.index] !== currentSymbol) {
-                                break;
+                    const startStarIndex = this.index + 1
+                    const buffer = this.#extractBuffer()
+                    let count = this.#symbolCounter(currentSymbol, 3)
+                    if (count === 3) {
+                        // bold italic
+                        const tokens = this.tokenize(
+                            (i, src) => src[i] === currentSymbol
+                        )
+                        while (count > 0 && this.index < this.content.length) {
+                            if (this.content[this.index] !== currentSymbol) {
+                                break
                             }
-                            count--;
-                            this.index++;
+                            count--
+                            this.index++
                         }
-                        if(count === 0) {
-                            this.textBuffer = buffer;
-                            this.#cleanBuffer(result);
+                        if (count === 0) {
+                            this.textBuffer = buffer
+                            this.#cleanBuffer(result)
                             result.push({
-                                type: currentSymbol === "_" ? "underline" : "bold",
+                                type:
+                                    currentSymbol === "_"
+                                        ? "underline"
+                                        : "bold",
                                 tokens: [
                                     {
                                         type: "italic",
                                         tokens,
-                                    }
-                                ]
-                            });
-                        } else if(count < 3) {
-                            if(count === 2) { // Bold / underline
-                                const endingFn = currentSymbol === "_" ? "underline" : "bold";
-                                const lastTokens = this.tokenize(ENDING_STARS.get(INLINE_KIND_CHARS.get(endingFn)!)!(currentSymbol));
-                                if(
-                                    this.index < this.content.length
-                                    && this.content[this.index] === currentSymbol
-                                    && this.index + 1 < this.content.length
-                                    && this.content[this.index + 1] === currentSymbol
+                                    },
+                                ],
+                            })
+                        } else if (count < 3) {
+                            if (count === 2) {
+                                // Bold / underline
+                                const endingFn =
+                                    currentSymbol === "_" ? "underline" : "bold"
+                                const lastTokens = this.tokenize(
+                                    ENDING_STARS.get(
+                                        INLINE_KIND_CHARS.get(endingFn)!
+                                    )!(currentSymbol)
+                                )
+                                if (
+                                    this.index < this.content.length &&
+                                    this.content[this.index] ===
+                                        currentSymbol &&
+                                    this.index + 1 < this.content.length &&
+                                    this.content[this.index + 1] ===
+                                        currentSymbol
                                 ) {
-                                    this.textBuffer = buffer;
-                                    this.#cleanBuffer(result);
+                                    this.textBuffer = buffer
+                                    this.#cleanBuffer(result)
                                     result.push({
-                                        type: currentSymbol === "_" ? "underline" : "bold",
+                                        type:
+                                            currentSymbol === "_"
+                                                ? "underline"
+                                                : "bold",
                                         tokens: [
                                             {
                                                 type: "italic",
                                                 tokens,
                                             },
                                             ...lastTokens,
-                                        ]
-                                    });
-                                    this.index += count;
+                                        ],
+                                    })
+                                    this.index += count
                                 } else {
-                                    this.textBuffer = `${buffer}${currentSymbol}`;
-                                    this.index = startStarIndex;
+                                    this.textBuffer = `${buffer}${currentSymbol}`
+                                    this.index = startStarIndex
                                 }
-                            } else { // Italic
-                                const lastTokens = this.tokenize(ENDING_STARS.get(INLINE_KIND_CHARS.get("italic")!)!(currentSymbol));
-                                if(
-                                    this.index < this.content.length
-                                    && this.content[this.index] === currentSymbol
+                            } else {
+                                // Italic
+                                const lastTokens = this.tokenize(
+                                    ENDING_STARS.get(
+                                        INLINE_KIND_CHARS.get("italic")!
+                                    )!(currentSymbol)
+                                )
+                                if (
+                                    this.index < this.content.length &&
+                                    this.content[this.index] === currentSymbol
                                 ) {
-                                    this.textBuffer = buffer;
-                                    this.#cleanBuffer(result);
+                                    this.textBuffer = buffer
+                                    this.#cleanBuffer(result)
                                     result.push({
                                         type: "italic",
                                         tokens: [
                                             {
-                                                type: currentSymbol === "_" ? "underline" : "bold",
+                                                type:
+                                                    currentSymbol === "_"
+                                                        ? "underline"
+                                                        : "bold",
                                                 tokens,
                                             },
                                             ...lastTokens,
-                                        ]
-                                    });
-                                    this.index += count;
+                                        ],
+                                    })
+                                    this.index += count
                                 } else {
-                                    this.textBuffer = `${buffer}${currentSymbol}`;
-                                    this.index = startStarIndex;
+                                    this.textBuffer = `${buffer}${currentSymbol}`
+                                    this.index = startStarIndex
                                 }
                             }
                         } else {
-                            this.textBuffer = `${buffer}${currentSymbol}`;
-                            this.index = startStarIndex;
+                            this.textBuffer = `${buffer}${currentSymbol}`
+                            this.index = startStarIndex
                         }
-                    } else { // bold / underline or italic
-                        if(count === 2) { // Bold / underline
-                            const endingFn = currentSymbol === "_" ? "underline" : "bold";
-                            const tokens = this.tokenize(ENDING_STARS.get(INLINE_KIND_CHARS.get(endingFn)!)!(currentSymbol));
-                            if(
-                                this.index < this.content.length
-                                && this.content[this.index] === currentSymbol
-                                && this.index + 1 < this.content.length
-                                && this.content[this.index + 1] === currentSymbol
+                    } else {
+                        // bold / underline or italic
+                        if (count === 2) {
+                            // Bold / underline
+                            const endingFn =
+                                currentSymbol === "_" ? "underline" : "bold"
+                            const tokens = this.tokenize(
+                                ENDING_STARS.get(
+                                    INLINE_KIND_CHARS.get(endingFn)!
+                                )!(currentSymbol)
+                            )
+                            if (
+                                this.index < this.content.length &&
+                                this.content[this.index] === currentSymbol &&
+                                this.index + 1 < this.content.length &&
+                                this.content[this.index + 1] === currentSymbol
                             ) {
-                                this.textBuffer = buffer;
-                                this.#cleanBuffer(result);
+                                this.textBuffer = buffer
+                                this.#cleanBuffer(result)
                                 result.push({
                                     type: endingFn,
                                     tokens,
-                                });
-                                this.index += count;
+                                })
+                                this.index += count
                             } else {
-                                this.textBuffer = `${buffer}${currentSymbol}`;
-                                this.index = startStarIndex;
+                                this.textBuffer = `${buffer}${currentSymbol}`
+                                this.index = startStarIndex
                             }
-                        } else { // Italic
-                            const tokens = this.tokenize(ENDING_STARS.get(INLINE_KIND_CHARS.get("italic")!)!(currentSymbol));
-                            if(
-                                this.index < this.content.length
-                                && this.content[this.index] === currentSymbol
+                        } else {
+                            // Italic
+                            const tokens = this.tokenize(
+                                ENDING_STARS.get(
+                                    INLINE_KIND_CHARS.get("italic")!
+                                )!(currentSymbol)
+                            )
+                            if (
+                                this.index < this.content.length &&
+                                this.content[this.index] === currentSymbol
                             ) {
-                                this.textBuffer = buffer;
-                                this.#cleanBuffer(result);
+                                this.textBuffer = buffer
+                                this.#cleanBuffer(result)
                                 result.push({
                                     type: "italic",
                                     tokens,
-                                });
-                                this.index += count;
+                                })
+                                this.index += count
                             } else {
-                                this.textBuffer = `${buffer}${currentSymbol}`;
-                                this.index = startStarIndex;
+                                this.textBuffer = `${buffer}${currentSymbol}`
+                                this.index = startStarIndex
                             }
                         }
                     }
-                    break;
+                    break
                 default:
-                    this.textBuffer += this.content[this.index++];
-                    break;
+                    this.textBuffer += this.content[this.index++]
+                    break
             }
         }
-        this.#cleanBuffer(result);
-        return result;
+        this.#cleanBuffer(result)
+        return result
     }
 }

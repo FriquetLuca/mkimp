@@ -1,0 +1,7 @@
+node_modules
+dist
+*.min.js
+package-lock.json
+**/*.html
+**/*.md
+src/highlightjs/tsql.ts

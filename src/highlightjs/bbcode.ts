@@ -5,36 +5,36 @@ Description: highlightjs language definition for bbcode files
 Category: config
 */
 
-import { type HLJSApi } from "highlight.js";
+import { type HLJSApi } from "highlight.js"
 
 export function bbcode(_: HLJSApi) {
     return {
         case_insensitive: true,
         contains: [
             {
-                className: 'name',
-                begin: /\[[^=\s\]]*/
+                className: "name",
+                begin: /\[[^=\s\]]*/,
             },
             {
-                className: 'name',
-                begin: ']'
+                className: "name",
+                begin: "]",
             },
             {
-              className: 'attribute',
-              begin: /(?<==)[^\]\s]*/
+                className: "attribute",
+                begin: /(?<==)[^\]\s]*/,
             },
             {
-                className: 'attr',
-                begin: /(?<=\[[^\]]* )[^\s=\]]*/
+                className: "attr",
+                begin: /(?<=\[[^\]]* )[^\s=\]]*/,
             },
             {
-                className: 'string',
-                begin: /[=;:8]'?\-?[\)\(3SPDO>@$|/]/
+                className: "string",
+                begin: /[=;:8]'?\-?[\)\(3SPDO>@$|/]/,
             },
             {
-                className: 'string',
-                begin: /:[\w]*:/
-            }
-        ]
-    };
+                className: "string",
+                begin: /:[\w]*:/,
+            },
+        ],
+    }
 }

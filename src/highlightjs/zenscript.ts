@@ -5,7 +5,7 @@ Description: ZenScript language support
 Category: scripting
 */
 
-import { type HLJSApi } from "highlight.js";
+import { type HLJSApi } from "highlight.js"
 
 export function zenscript(hljs: HLJSApi) {
     return {
@@ -128,5 +128,5 @@ export function zenscript(hljs: HLJSApi) {
             hljs.QUOTE_STRING_MODE,
             hljs.HASH_COMMENT_MODE,
         ],
-    };
-};
+    }
+}
