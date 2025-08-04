@@ -1,127 +1,271 @@
 # MkImp
 
-Write markdown like a programmer should be able to!
+**MkImp** lets you write Markdown like a programmer should be able to — with power, precision, and extensibility.
 
-This is not standard markdown nor does it support extensions. If you need to implement extensions, either create an issue or a pull request. In case your feature won't be implemented for any reason, fork the project and enjoy.
+⚠️ **Note:** This is **not** standard Markdown. MkImp defines its own rules and does **not** support arbitrary extensions out of the box.
 
-## Installation
+If you'd like to propose new features, please open an issue or a pull request. If a feature is declined, feel free to fork the project and build on it.
 
-You can install the project with `npm`.
+MkImp uses:
+- [`highlight.js`](https://highlightjs.org/) for syntax highlighting
+- [`KaTeX`](https://katex.org/) for mathematical formulas
+- Optionally supports [`Mermaid`](https://mermaid.js.org/) for diagrams (you must handle rendering yourself)
+
+---
+
+## 🚀 Installation
+
+Install using npm:
 
 ```bash
 npm install mkimp
 ```
 
-Once it's installed, just import it in your project and use it:
+---
+
+## 🔧 Usage
 
 ```ts
 import { MkImp } from "mkimp";
 
 const mkimp = new MkImp({
-    include(loc, from, to) {
-        return `${loc} from [${from}] to [${to}]`;
-    },
-    includeCode(loc, from, to) {
-        return `${loc} from [${from}] to [${to}]`;
-    },
+  include(loc, from, to) {
+    return `${loc} from [${from}] to [${to}]`;
+  },
+  includeCode(loc, from, to) {
+    return `${loc} from [${from}] to [${to}]`;
+  },
 });
+
 console.log(mkimp.parse("# Hello\n\nThis *is* some __nice__ markdown!"));
 ```
 
-Here's all the options available for the parser:
+---
+
+## ⚙️ Options
 
 ```ts
 interface MkImpOptions {
-    // Your tabulation spaces (default to 4)
-    tabulation?: number
-    // metadata to use, frontmatter ones will be injected in the object in the tokenizer.
-    // If a data already exist, it won't be overridden.
-    metadata?: Map<string, string>
-    // A list of all your emojis to use.
-    // The key will be the name used for your emoji.
-    emojis?: Record<string, EmojiRecord>
-    // Use anything you want to parse your front matter. (default to JSON)
-    frontMatter?: (content: string) => unknown
-    // Handler for INCLUDE block, if unspecified the INCLUDE won't be parsed.
-    include?: (
-        location: string,
-        from: number | undefined,
-        to: number | undefined
-    ) => string
-    // Handler for INCLUDECODE block, if unspecified the INCLUDECODE won't be parsed.
-    includeCode?: (
-        location: string,
-        from: number | undefined,
-        to: number | undefined
-    ) => string | undefined
-    // Specify if the heading should be groupped by section with their own content. (default to false)
-    withSection?: boolean
-    // Specify the render target for the renderer. (default to raw)
-    renderTarget?: RenderTarget
+  tabulation?: number; // Number of spaces per indentation level (default: 4)
+  metadata?: Map<string, string>; // Front matter metadata (won't override existing entries)
+  emojis?: Record<string, EmojiRecord>; // Custom emoji definitions
+  frontMatter?: (content: string) => unknown; // Custom front matter parser (default: JSON)
+  include?: (location: string, from?: number, to?: number) => string; // INCLUDE block handler
+  includeCode?: (location: string, from?: number, to?: number) => string | undefined; // INCLUDECODE block handler
+  withSection?: boolean; // Enable section-based rendering (default: false)
+  renderTarget?: RenderTarget; // Output format (default: "raw")
 }
 
-// The render target decide how some elements should be handled in the rendering.
-// - article: Return the markdown wrapped inside an article tag.
-// - raw: Return the raw markdown. (default to raw)
-type RenderTarget = "raw" | "article"
+type RenderTarget = "raw" | "article";
 
-// This is how an emoji record looks like
 type EmojiRecord =
-    | { type: "char"; char: string }
-    | {
-          type: "img"
-          url: string
-          alt?: string
-          width?: number
-          height?: number
-      }
-    | { type: "i"; className: string }
+  | { type: "char"; char: string }
+  | { type: "img"; url: string; alt?: string; width?: number; height?: number }
+  | { type: "i"; className: string };
+```
 
-// Declaration of MkImp.
+---
+
+## 🧱 API
+
+```ts
 class MkImp {
-    constructor(options: MkImpOptions = {});
-    // Generate the AST for the markdown, all into a RootToken.
-    ast(markdown: string): RootToken;
-    // Render the RootToken into HTML.
-    render(root: RootToken): string;
-    // Parse markdown directly into HTML.
-    parse(markdown: string): string;
+  constructor(options?: MkImpOptions);
+
+  ast(markdown: string): RootToken;      // Generate AST
+  render(root: RootToken): string;       // Render HTML from AST
+  parse(markdown: string): string;       // Directly parse markdown to HTML
 }
 ```
 
-## Syntax
+---
 
-Like it has been stated, this is not standard markdown so here's a full list of what you can do:
+## 📚 Syntax Guide
 
-### Block rules
+MkImp is **not standard Markdown**, so here's a complete overview of supported syntax.
 
+### 🧩 Block Syntax
 
+#### Headings
 
-### Inline rules
+```md
+# Heading 1
+## Heading 2
+...
 
-| Rule | Description |
-| :--- | ----------- |
-| "\n" | When using a new line in a paragraph, it will be converted into a `<br/>` tag. |
-| {{var_name}} | Variable names to access metadata are to be put inside double curly brackets. This can only be used as text. |
-| \`text\` | Codespan works the same way as classic markdown. |
-| !\[alt text](/link/to/img.png "optional title") | Image works the same way as classic markdown. |
-| !YOUTUBE\[title]\{attributes\} | Import an embeded youtube link using this rule. The `vid` attribute is required, and the optional attributes are: `width`, `height`, `start` and `allowfullscreen` Example: !YOUTUBE[A title for the video]{vid="M66U_DuMCS8" width="280" height="157" start="60" allowfullscreen="false"} |
-| \[some title](/link/to/whatever "optinal title") | Link work the same way as classic markdown. |
-| \[^ref] | Footnote labels to link to a footnote description work the same way as extended markdown. |
-| \[text][ref] | Reference link work the same way as classic markdown. |
-| \$formula\$ | An inline LaTeX formula to write without display mode. |
-| \$\$formula\$\$ | An inline LaTeX formula to write with display mode. |
-| \<www.hello.com\> | Turn directly the content into a link. |
-| \<div\> | Allow inline HTML tags; it is possible to write markdown between two HTML tags when classic markdown doesn't allow it. |
-| \|\|spoiler content\|\| | Hide some content until you click on it. |
-| >!spoiler content!< | Hide some content until you click on it. |
-| \:joy\: | Add emojis into your markdown content or special characters if you prefere to. |
-| \=\=text\=\= | Highlight your text. |
-| \~\~text\~\~ | Strikethrough your text. |
-| \^\^text\^\^ | Overline your text. |
-| \_\_text\_\_ | Underline your text with 2 `_`. |
-| \*text\* | Make your text italic. |
-| \*\*text\*\* | Make your text bold. |
-| \*\*\*text\*\*\* | Make your text bold and italic. |
-| \_text\_ | Make your text italic with 1 `_`. |
-| \_\_\_text\_\_\_ | Make your text underlined and italic with 3 `_`. |
+Setext-style headings:
+Heading 1
+===
+
+Heading 2
+---
+```
+
+Add an ID:  
+```md
+# My heading {#custom-id}
+```
+
+Enable automatic section numbering:
+```md
+#! Section Heading
+```
+
+Setext-style headings get the class `md-heading md-h-underline`.
+
+#### Code Blocks
+
+##### Indented code:
+
+```
+    let x = 42;
+```
+
+##### Fenced code:
+
+````
+```cpp
+const x = 42;
+```
+````
+
+#### Blockquote
+
+```md
+> This is a quote.
+```
+
+#### Spoilers
+
+```md
+!> Spoiler title
+Spoiler content...
+<!  // end of spoiler block
+```
+
+#### Math (KaTeX)
+
+```latex
+$$
+a^2 + b^2 = c^2
+$$
+```
+
+#### Footnotes
+
+```md
+[^note]: This is a footnote.
+
+Referenced like so[^note].
+```
+
+#### Reference Links
+
+```md
+[ref]: https://example.com "Optional title"
+```
+
+#### Lists & Task Lists
+
+```md
+1. First
+2. Second
+   - Sublist
+   - Item
+
+- [x] Task done
+- [ ] Task pending
+```
+
+#### Definition Lists
+
+```md
+Term
+: Definition 1
+: Definition 2
+```
+
+#### Horizontal Rules
+
+```md
+----------------
+```
+
+#### Tables
+
+```md
+| Key   | Value     |
+|-------|-----------|
+| One   | First row |
+```
+
+#### Raw HTML
+
+You can mix HTML with markdown:
+
+```md
+<div>
+
+**Markdown inside HTML block**
+
+</div>
+```
+
+#### Includes
+
+```md
+!INCLUDE "./file.md"
+!INCLUDE "./file.md", l 1:5 s 1  // lines 1–5, shift heading by 1
+```
+
+#### Include Code
+
+```md
+!INCLUDECODE "./file.ts" (ts), 5:10
+```
+
+#### Mermaid Diagrams
+
+```md
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+```
+```
+
+> Rendering Mermaid is **up to you** — MkImp only passes it through.
+
+---
+
+### ✨ Inline Syntax
+
+| Syntax | Description |
+|--------|-------------|
+| `\n` | Turns into `<br/>` |
+| `{{var}}` | Inject metadata |
+| `` `code` `` | Inline code |
+| `![alt](/img.png "title")` | Image |
+| `!YOUTUBE[title]{vid="..."}` | Embed YouTube |
+| `[label](/url "title")` | Link |
+| `[^foot]` | Footnote reference |
+| `[text][ref]` | Reference link |
+| `$x^2$` | Inline LaTeX |
+| `$$x^2$$` | Display LaTeX |
+| `<tag>` | Inline HTML |
+| `\|\|spoiler\|\|` / `>!spoiler!<` | Inline spoiler |
+| `:smile:` | Emoji |
+| `==highlight==` | Highlight text |
+| `~~strikethrough~~` | Strikethrough |
+| `^^overline^^` | Overline |
+| `__underline__` | Underline |
+| `*italic*` / `_italic_` | Italic |
+| `**bold**` | Bold |
+| `***bold italic***` | Bold + Italic |
+| `___underline italic___` | Underlined italic |
+
+---
+
+## 📦 License
+
+[MIT](./LICENSE)
