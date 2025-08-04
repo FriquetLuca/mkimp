@@ -1,4 +1,3 @@
-1. frontmatter should only capture 3 dashes or more, but this should be closed by the same number of dashes.
 3. aria for elements (prolly end heading with <a aria-hidden="true" class="anchor" id="heading" href="#heading">¶</a>)
     1. <h1 aria-level="1">Heading</h1><h2 aria-level="2">Subheading</h2> (heading)
     2. <a href="..." aria-label="Descriptive label if needed">text</a> (links)

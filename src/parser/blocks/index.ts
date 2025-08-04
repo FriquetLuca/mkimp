@@ -156,6 +156,8 @@ export interface BlockTokenizerOptions {
     lines: Line[]
 }
 
+const dashMatch = /^-{3,}$/
+
 export class BlockTokenizer {
     lexer: Lexer
     level: number = 0
@@ -168,13 +170,19 @@ export class BlockTokenizer {
         if (!this.lexer.started) {
             if (this.line < this.content.length) {
                 const start = this.content[this.line].content.trimEnd()
-                if (start === "---") {
+                const dashes = dashMatch.exec(start)
+                if (dashes !== null) {
+                    const [rowDashes] = dashes
                     let line = this.line + 1
                     const startIndex = this.line
                     let endIndex: number | undefined = undefined
                     while (line < this.content.length) {
                         const maybeEnd = this.content[line].content.trimEnd()
-                        if (maybeEnd === "---") {
+                        const dashEnd = dashMatch.exec(maybeEnd)
+                        if (
+                            dashEnd !== null &&
+                            dashEnd[0].length === rowDashes.length
+                        ) {
                             endIndex = line
                             break
                         }

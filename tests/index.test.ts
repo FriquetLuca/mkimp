@@ -1,5 +1,7 @@
 import { MkImp } from "../src"
 
-test("test 1", () => {
-    expect("a").toEqual("a")
+test("frontmatter should be found correctly", () => {
+    const mkimp = new MkImp().ast('----\n{\n"hello":"world"\n}\n----\nHello!')
+    const expectResult = new Map([["hello", "world"]])
+    expect(mkimp.metadata).toEqual(expectResult)
 })
