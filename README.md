@@ -1,5 +1,11 @@
 # MkImp
 
+<p align="center">
+    <img  src="https://img.shields.io/badge/license-MIT-green">
+    <img  src="https://img.shields.io/badge/typescript-v5.9.2-orange">
+    <img  src="https://img.shields.io/badge/node-v22.11.0-yellow">
+</p>
+
 **MkImp** lets you write Markdown like a programmer should be able to — with power, precision, and extensibility.
 
 ⚠️ **Note:** This is **not** standard Markdown. MkImp defines its own rules and does **not** support arbitrary extensions out of the box.
