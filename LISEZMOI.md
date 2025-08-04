@@ -227,13 +227,13 @@ Terme
 
 #### Mermaid
 
-```md
+````md
 ```mermaid
 graph TD;
     A-->B;
     A-->C;
 ```
-```
+````
 
 Le rendu Mermaid est à votre charge.
 
@@ -270,3 +270,9 @@ Le rendu Mermaid est à votre charge.
 ## 📦 Licence
 
 [MIT](./LICENSE)
+
+## 📖 Read me
+
+For English speakers:
+
+[Read me](./README.md)

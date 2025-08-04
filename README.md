@@ -275,3 +275,9 @@ Rendering Mermaid is **up to you** — MkImp only passes it through.
 ## 📦 License
 
 [MIT](./LICENSE)
+
+## 📖 Lisez Moi
+
+Pour les francophones :
+
+[Lisez moi](./LISEZMOI.md)
