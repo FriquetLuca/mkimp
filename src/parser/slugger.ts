@@ -8,7 +8,7 @@ export class Slugger {
      */
     slug(text: string): string {
         // Normalize, lowercase, and replace unsafe characters
-        let slug = text
+        const slug = text
             .toLowerCase()
             .normalize("NFKD") // Normalize accented characters
             .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
