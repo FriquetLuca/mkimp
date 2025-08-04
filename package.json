@@ -13,7 +13,7 @@
     "require": "./dist/index.cjs.js"
   },
   "scripts": {
-    "build": "(rmdir /q /s dist) && node build.mjs && tsc --emitDeclarationOnly",
+    "build": "(rm -rf dist) && node build.mjs && tsc --emitDeclarationOnly",
     "fmt": "npx prettier . --write",
     "test": "jest"
   },
