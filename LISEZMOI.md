@@ -117,8 +117,6 @@ Activer la numérotation automatique :
 #! Titre avec index
 ```
 
-> Les titres Setext ont la classe CSS `md-heading md-h-underline`.
-
 #### Blocs de code
 
 ##### Indenté :

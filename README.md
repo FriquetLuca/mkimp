@@ -117,8 +117,6 @@ Enable automatic section numbering:
 #! Section Heading
 ```
 
-Setext-style headings get the class `md-heading md-h-underline`.
-
 #### Code Blocks
 
 ##### Indented code:

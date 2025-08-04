@@ -63,8 +63,8 @@ const RENDERER_FNS: TokenRendering = {
         const headingContent = this.renderer(token.tokens)
         const id = token.id ? ` id="${token.id}"` : ""
         return token.isUnderline
-            ? `<h${token.depth} class="md-heading md-h-underline">${token.headingIndex}${headingContent}</h${token.depth}>`
-            : `<h${token.depth}${id} class="md-heading">${token.headingIndex}${headingContent}</h${token.depth}>`
+            ? `<h${token.depth} class="md-heading md-h-underline" aria-level="${token.depth}">${token.headingIndex}${headingContent}</h${token.depth}>`
+            : `<h${token.depth}${id} class="md-heading" aria-level="${token.depth}">${token.headingIndex}${headingContent}</h${token.depth}>`
     },
     codeblock(token) {
         if (token.from !== undefined || token.to !== undefined) {
@@ -79,7 +79,7 @@ const RENDERER_FNS: TokenRendering = {
             } else {
                 codeText = escape(token.content, true)
             }
-            return `<pre class="md-precode"><code class="md-code${lang}"><table class="md-code-table"><colgroup><col /><col class="md-table-line-space" /><col /></colgroup><tbody>${codeText
+            return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code${lang}"><table class="md-code-table"><colgroup><col /><col class="md-table-line-space" /><col /></colgroup><tbody>${codeText
                 .split(/\r?\n/)
                 .map(
                     (c, i) =>
@@ -89,33 +89,33 @@ const RENDERER_FNS: TokenRendering = {
         } else {
             if (token.lang && hljs.getLanguage(token.lang)) {
                 const lang = token.lang ? `language-${token.lang}` : ""
-                return `<pre class="md-precode"><code class="md-code ${lang}">${hljs.highlight(token.content, { language: token.lang }).value}</code></pre>`
+                return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code ${lang}">${hljs.highlight(token.content, { language: token.lang }).value}</code></pre>`
             } else if (token.lang === "mermaid") {
-                return `<pre class="md-mermaid mermaid">${escape(token.content, true)}</pre>`
+                return `<pre role="region" aria-label="Code block" class="md-mermaid mermaid">${escape(token.content, true)}</pre>`
             }
-            return `<pre class="md-precode"><code class="md-code">${escape(token.content, true)}</code></pre>`
+            return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code">${escape(token.content, true)}</code></pre>`
         }
     },
     horizontal(_) {
-        return '<hr class="md-line">'
+        return '<hr class="md-line" role="separator" aria-hidden="true">'
     },
     blockquote(token) {
-        return `<blockquote class="md-blockquote">${this.renderer(token.tokens)}</blockquote>`
+        return `<blockquote class="md-blockquote" role="note" aria-label="A quote from the author">${this.renderer(token.tokens)}</blockquote>`
     },
     list(token) {
         const type = token.ordered ? "ol" : "ul"
-        return `<${type} class="md-${type}list">${this.renderer(token.items)}</${type}>`
+        return `<${type} role="list" class="md-${type}list">${this.renderer(token.items)}</${type}>`
     },
     listItem(token) {
         const head = token.task
             ? `<input class="md-checkbox" type="checkbox" disabled${token.checked === true ? " checked" : ""}> `
             : ""
         const body = this.renderer(token.tokens)
-        return `<li class="${token.task ? "md-taskitem" : "md-listitem"}">${head}${body}</li>`
+        return `<li role="listitem" class="${token.task ? "md-taskitem" : "md-listitem"}">${head}${body}</li>`
     },
     table(token) {
-        const header = `<thead class="md-thead"><tr class="md-htablerow">${this.renderer(token.header)}</tr></thead>`
-        const body = `<tbody class="md-tbody">${token.rows.map((cells) => `<tr class="md-tablerow">${this.renderer(cells)}</tr>`).join("")}</tbody>`
+        const header = `<thead class="md-thead" role="rowgroup"><tr class="md-htablerow">${this.renderer(token.header)}</tr></thead>`
+        const body = `<tbody class="md-tbody" role="rowgroup">${token.rows.map((cells) => `<tr class="md-tablerow">${this.renderer(cells)}</tr>`).join("")}</tbody>`
         return `<table class="md-table" role="table">${header}${body}</table>`
     },
     cell(token) {
@@ -203,7 +203,7 @@ const RENDERER_FNS: TokenRendering = {
         return escape(token.text)
     },
     codespan(token) {
-        return `<code class="md-codespan">${escape(token.text, true)}</code>`
+        return `<code aria-label="Code" class="md-codespan">${escape(token.text, true)}</code>`
     },
     youtubeEmbed(token) {
         const vid = token.attributes.vid
