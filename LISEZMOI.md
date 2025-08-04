@@ -6,7 +6,7 @@
     <img  src="https://img.shields.io/badge/node-v22.11.0-yellow">
 </p>
 
-**MkImp** vous permet d’écrire du Markdown comme un·e vrai·e développeur·se — avec puissance, précision et extensibilité.
+**MkImp** vous permet d’écrire du Markdown comme un(e) vrai(e) développeur(se) — avec puissance, précision et extensibilité.
 
 ⚠️ **Remarque :** MkImp **ne suit pas** strictement la spécification Markdown classique. Il définit ses propres règles et **ne prend pas en charge les extensions personnalisées** par défaut.
 
