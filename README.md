@@ -232,13 +232,13 @@ You can mix HTML with markdown:
 
 #### Mermaid Diagrams
 
-```md
+````md
 ```mermaid
 graph TD;
     A-->B;
     A-->C;
 ```
-```
+````
 
 Rendering Mermaid is **up to you** — MkImp only passes it through.
 
