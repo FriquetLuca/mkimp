@@ -35,10 +35,10 @@ npm install mkimp
 import { MkImp } from "mkimp";
 
 const mkimp = new MkImp({
-  include(loc, from, to) {
+  async include(loc, from, to) {
     return `${loc} de [${from}] à [${to}]`;
   },
-  includeCode(loc, from, to) {
+  async includeCode(loc, from, to) {
     return `${loc} de [${from}] à [${to}]`;
   },
 });
@@ -55,9 +55,9 @@ interface MkImpOptions {
   tabulation?: number; // Nombre d'espaces pour une indentation (par défaut : 4)
   metadata?: Map<string, string>; // Métadonnées à injecter (non écrasées si déjà présentes)
   emojis?: Record<string, EmojiRecord>; // Emojis personnalisés
-  frontMatter?: (content: string) => unknown; // Parseur front matter personnalisé (par défaut : JSON)
-  include?: (location: string, from?: number, to?: number) => string; // Gestion des blocs !INCLUDE
-  includeCode?: (location: string, from?: number, to?: number) => string | undefined; // Gestion des blocs !INCLUDECODE
+  frontMatter?: (content: string) => Promise<unknown>; // Parseur front matter personnalisé (par défaut : JSON)
+  include?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // Gestion des blocs !INCLUDE
+  includeCode?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // Gestion des blocs !INCLUDECODE
   withSection?: boolean; // Grouper les titres par section (par défaut : false)
   renderTarget?: RenderTarget; // Format de rendu ("raw" ou "article")
 }
@@ -78,9 +78,9 @@ type EmojiRecord =
 class MkImp {
   constructor(options?: MkImpOptions);
 
-  ast(markdown: string): RootToken;      // Génère l’AST
-  render(root: RootToken): string;       // Rend en HTML à partir de l’AST
-  parse(markdown: string): string;       // Parse directement le markdown vers du HTML
+  ast(markdown: string): Promise<RootToken>;  // Génère l’AST
+  render(root: RootToken): string;            // Rend en HTML à partir de l’AST
+  parse(markdown: string): Promise<string>;   // Parse directement le markdown vers du HTML
 }
 ```
 
