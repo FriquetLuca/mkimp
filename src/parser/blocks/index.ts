@@ -985,6 +985,7 @@ export class BlockTokenizer {
             const [_, loc1, loc2, fromStr, toStr, hShift] = match
             const includeLocation = loc1 ?? loc2
             if (this.lexer.includedLocations.has(includeLocation)) {
+                this.line++
                 return {
                     type: "include",
                     tokens: [],
