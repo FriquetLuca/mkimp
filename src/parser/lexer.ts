@@ -130,8 +130,8 @@ export class Lexer {
         const _blocks = await new BlockTokenizer({
             lexer: this,
             lines: stringToLines(content, this.tabulation),
-        }).initialize();
-        const blocks = await _blocks.tokenize();
+        }).initialize()
+        const blocks = await _blocks.tokenize()
         return blocks.getBlocks()
     }
     inlineLex(content: string): MdToken[] {
@@ -155,10 +155,11 @@ export class Lexer {
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
             })
-        const blocks = await new BlockTokenizer({
+        const _blocks = await new BlockTokenizer({
             lexer,
             lines: stringToLines(content, lexer.tabulation),
-        }).tokenize()
+        }).initialize()
+        const blocks = await _blocks.tokenize()
         const tokens = blocks.getBlocks()
         if (lexer.footnoteDefs.size > 0 && lexer.footnoteIndexMap.size > 1) {
             tokens.push({

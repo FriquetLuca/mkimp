@@ -288,7 +288,7 @@ export class BlockTokenizer {
                 this.addToken(token)
                 continue
             } else {
-                this.paragraph()
+                await this.paragraph()
             }
         }
         return this
@@ -438,7 +438,7 @@ export class BlockTokenizer {
             const tokens = await new BlockTokenizer({
                 lexer: this.lexer,
                 lines: this.content.slice(startIndex, this.line),
-            }).tokenize();
+            }).tokenize()
             this.line++
             return {
                 type: "spoiler",
@@ -663,7 +663,7 @@ export class BlockTokenizer {
                 const _tokens = await new BlockTokenizer({
                     lexer: this.lexer,
                     lines,
-                }).tokenize();
+                }).tokenize()
                 const tokens = _tokens.getBlocks()
                 if (tokens.length > 0 && tokens[0].type === "paragraph") {
                     const first = tokens.shift()! as ParagraphToken
@@ -960,7 +960,7 @@ export class BlockTokenizer {
                 const _tokens = await new BlockTokenizer({
                     lexer: this.lexer,
                     lines,
-                }).tokenize();
+                }).tokenize()
                 const tokens = _tokens.getBlocks()
                 this.lexer.footnoteDefs.set(ref, tokens)
             }
@@ -1011,10 +1011,8 @@ export class BlockTokenizer {
                 Math.min(currentHeadingShift + headingShifter, 6)
             )
             this.lexer.started = false
-            const content = await this.lexer.include(includeLocation, from, to);
-            const tokens = content ? await this.lexer.lex(
-                content
-            ) : []
+            const content = await this.lexer.include(includeLocation, from, to)
+            const tokens = content ? await this.lexer.lex(content) : []
             this.lexer.headingShift = currentHeadingShift
             this.lexer.includedLocations.delete(includeLocation)
             this.line++
@@ -1047,7 +1045,8 @@ export class BlockTokenizer {
             try {
                 to = toStr ? Math.max(parseInt(toStr, 10), 1) : undefined
             } catch (_) {}
-            const content = await this.lexer.includeCode(includePath, from, to) ?? raw
+            const content =
+                (await this.lexer.includeCode(includePath, from, to)) ?? raw
             this.line++
             return {
                 type: "codeblock",
@@ -1212,7 +1211,7 @@ export class BlockTokenizer {
                             const item = await new BlockTokenizer({
                                 lexer: this.lexer,
                                 lines: newDef,
-                            }).tokenize();
+                            }).tokenize()
                             definitions.push(item.getBlocks())
                         } else {
                             break
