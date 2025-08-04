@@ -76,4 +76,52 @@ type EmojiRecord =
           height?: number
       }
     | { type: "i"; className: string }
+
+// Declaration of MkImp.
+class MkImp {
+    constructor(options: MkImpOptions = {});
+    // Generate the AST for the markdown, all into a RootToken.
+    ast(markdown: string): RootToken;
+    // Render the RootToken into HTML.
+    render(root: RootToken): string;
+    // Parse markdown directly into HTML.
+    parse(markdown: string): string;
+}
 ```
+
+## Syntax
+
+Like it has been stated, this is not standard markdown so here's a full list of what you can do:
+
+### Block rules
+
+
+
+### Inline rules
+
+| Rule | Description |
+| :--- | ----------- |
+| "\n" | When using a new line in a paragraph, it will be converted into a `<br/>` tag. |
+| {{var_name}} | Variable names to access metadata are to be put inside double curly brackets. This can only be used as text. |
+| \`text\` | Codespan works the same way as classic markdown. |
+| !\[alt text](/link/to/img.png "optional title") | Image works the same way as classic markdown. |
+| !YOUTUBE\[title]\{attributes\} | Import an embeded youtube link using this rule. The `vid` attribute is required, and the optional attributes are: `width`, `height`, `start` and `allowfullscreen` Example: !YOUTUBE[A title for the video]{vid="M66U_DuMCS8" width="280" height="157" start="60" allowfullscreen="false"} |
+| \[some title](/link/to/whatever "optinal title") | Link work the same way as classic markdown. |
+| \[^ref] | Footnote labels to link to a footnote description work the same way as extended markdown. |
+| \[text][ref] | Reference link work the same way as classic markdown. |
+| \$formula\$ | An inline LaTeX formula to write without display mode. |
+| \$\$formula\$\$ | An inline LaTeX formula to write with display mode. |
+| \<www.hello.com\> | Turn directly the content into a link. |
+| \<div\> | Allow inline HTML tags; it is possible to write markdown between two HTML tags when classic markdown doesn't allow it. |
+| \|\|spoiler content\|\| | Hide some content until you click on it. |
+| >!spoiler content!< | Hide some content until you click on it. |
+| \:joy\: | Add emojis into your markdown content or special characters if you prefere to. |
+| \=\=text\=\= | Highlight your text. |
+| \~\~text\~\~ | Strikethrough your text. |
+| \^\^text\^\^ | Overline your text. |
+| \_\_text\_\_ | Underline your text with 2 `_`. |
+| \*text\* | Make your text italic. |
+| \*\*text\*\* | Make your text bold. |
+| \*\*\*text\*\*\* | Make your text bold and italic. |
+| \_text\_ | Make your text italic with 1 `_`. |
+| \_\_\_text\_\_\_ | Make your text underlined and italic with 3 `_`. |

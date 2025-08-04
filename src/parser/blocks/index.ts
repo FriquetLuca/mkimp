@@ -151,7 +151,7 @@ export type MdBlockToken =
     | ParagraphToken
     | FootnoteEndToken
 
-interface BlockTokenizerOptions {
+export interface BlockTokenizerOptions {
     lexer: Lexer
     lines: Line[]
 }

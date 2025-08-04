@@ -58,14 +58,14 @@ export class MkImp {
             includeCode: this.includeCode,
         })
     }
-    render(root: RootToken) {
+    render(root: RootToken): string {
         const render = new Renderer(root, {
             withSection: this.withSection,
             renderTarget: this.renderTarget,
         })
         return render.render()
     }
-    parse(markdown: string) {
+    parse(markdown: string): string {
         const ast = this.ast(markdown)
         return this.render(ast)
     }

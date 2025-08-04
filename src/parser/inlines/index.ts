@@ -113,7 +113,7 @@ export type MdInlineToken =
     | BoldToken
     | ItalicToken
 
-interface InlineTokenizerOptions {
+export interface InlineTokenizerOptions {
     parent?: InlineTokenizer
     lexer: Lexer
     content: string
