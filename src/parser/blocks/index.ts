@@ -167,6 +167,8 @@ export class BlockTokenizer {
     constructor(options: BlockTokenizerOptions) {
         this.lexer = options.lexer
         this.content = options.lines
+    }
+    async initialize(): Promise<this> {
         if (!this.lexer.started) {
             if (this.line < this.content.length) {
                 const start = this.content[this.line].content.trimEnd()
@@ -195,7 +197,7 @@ export class BlockTokenizer {
                             .join("\n")
                         try {
                             if (this.lexer.frontMatter) {
-                                const json = this.lexer.frontMatter(meta)
+                                const json = await this.lexer.frontMatter(meta)
                                 flattenJSONintoMap(json, this.lexer.metadata)
                                 this.line = line
                             } else {
@@ -211,17 +213,18 @@ export class BlockTokenizer {
             }
         }
         this.lexer.started = true
+        return this
     }
-    getBlock(pskip = false) {
+    async getBlock(pskip = false): Promise<MdToken | undefined> {
         let token: MdToken | undefined = this.hashHeading()
         if (token) {
             return token
         }
-        token = this.blockQuote()
+        token = await this.blockQuote()
         if (token) {
             return token
         }
-        token = this.orderedList()
+        token = await this.orderedList()
         if (token) {
             return token
         }
@@ -229,7 +232,7 @@ export class BlockTokenizer {
         if (token) {
             return token
         }
-        token = this.unorderedList(pskip)
+        token = await this.unorderedList(pskip)
         if (token) {
             return token
         }
@@ -241,15 +244,15 @@ export class BlockTokenizer {
         if (token) {
             return token
         }
-        token = this.spoiler()
+        token = await this.spoiler()
         if (token) {
             return token
         }
-        token = this.include()
+        token = await this.include()
         if (token) {
             return token
         }
-        token = this.includeCode()
+        token = await this.includeCode()
         if (token) {
             return token
         }
@@ -269,18 +272,18 @@ export class BlockTokenizer {
         }
         return undefined
     }
-    tokenize() {
+    async tokenize(): Promise<this> {
         while (
             this.line < this.content.length &&
             this.level <= this.content[this.line].level
         ) {
-            if (this.footnoteDef()) {
+            if (await this.footnoteDef()) {
                 continue
             }
             if (this.reflink()) {
                 continue
             }
-            const token = this.getBlock()
+            const token = await this.getBlock()
             if (token) {
                 this.addToken(token)
                 continue
@@ -414,7 +417,7 @@ export class BlockTokenizer {
             content,
         }
     }
-    spoiler(): SpoilerToken | undefined {
+    async spoiler(): Promise<SpoilerToken | undefined> {
         const currentToken = this.content[this.line]
         if (this.level < currentToken.level) {
             return undefined
@@ -432,18 +435,16 @@ export class BlockTokenizer {
                 }
                 this.line++
             }
-            const tokens = new BlockTokenizer({
+            const tokens = await new BlockTokenizer({
                 lexer: this.lexer,
                 lines: this.content.slice(startIndex, this.line),
-            })
-                .tokenize()
-                .getBlocks()
+            }).tokenize();
             this.line++
             return {
                 type: "spoiler",
                 title: this.lexer.inlineLex(title),
                 inline: false,
-                tokens,
+                tokens: tokens.getBlocks(),
             }
         }
         return undefined
@@ -517,7 +518,7 @@ export class BlockTokenizer {
             character,
         }
     }
-    blockQuote(): BlockQuoteToken | undefined {
+    async blockQuote(): Promise<BlockQuoteToken | undefined> {
         const firstLine = this.content[this.line]
         if (this.level < firstLine.level) {
             return undefined
@@ -585,16 +586,16 @@ export class BlockTokenizer {
             }
             this.line++
         }
-        const blocks = new BlockTokenizer({
+        const blocks = await new BlockTokenizer({
             lexer: this.lexer,
             lines,
-        })
+        }).tokenize()
         return {
             type: "blockquote",
-            tokens: blocks.tokenize().getBlocks(),
+            tokens: blocks.getBlocks(),
         }
     }
-    orderedList(): ListToken | undefined {
+    async orderedList(): Promise<ListToken | undefined> {
         if (this.level < this.content[this.line].level) {
             return undefined
         }
@@ -659,12 +660,11 @@ export class BlockTokenizer {
                     }
                     this.line++
                 }
-                const tokens = new BlockTokenizer({
+                const _tokens = await new BlockTokenizer({
                     lexer: this.lexer,
                     lines,
-                })
-                    .tokenize()
-                    .getBlocks()
+                }).tokenize();
+                const tokens = _tokens.getBlocks()
                 if (tokens.length > 0 && tokens[0].type === "paragraph") {
                     const first = tokens.shift()! as ParagraphToken
                     items.push({
@@ -695,7 +695,7 @@ export class BlockTokenizer {
             items,
         }
     }
-    unorderedList(pskip = false): ListToken | undefined {
+    async unorderedList(pskip = false): Promise<ListToken | undefined> {
         const firstElement = this.content[this.line]
         if (this.level < firstElement.level) {
             return undefined
@@ -777,12 +777,11 @@ export class BlockTokenizer {
                     }
                     this.line++
                 }
-                const tokens = new BlockTokenizer({
+                const _tokens = await new BlockTokenizer({
                     lexer: this.lexer,
                     lines,
-                })
-                    .tokenize()
-                    .getBlocks()
+                }).tokenize()
+                const tokens = _tokens.getBlocks()
                 if (tokens.length > 0 && tokens[0].type === "paragraph") {
                     const first = tokens.shift()! as ParagraphToken
                     items.push({
@@ -901,7 +900,7 @@ export class BlockTokenizer {
         }
         return undefined
     }
-    footnoteDef(): boolean {
+    async footnoteDef(): Promise<boolean> {
         const currentItem = this.content[this.line]
         if (this.level < currentItem.level) {
             return false
@@ -958,19 +957,18 @@ export class BlockTokenizer {
                 this.line++
             }
             if (!this.lexer.footnoteDefs.has(ref)) {
-                const tokens = new BlockTokenizer({
+                const _tokens = await new BlockTokenizer({
                     lexer: this.lexer,
                     lines,
-                })
-                    .tokenize()
-                    .getBlocks()
+                }).tokenize();
+                const tokens = _tokens.getBlocks()
                 this.lexer.footnoteDefs.set(ref, tokens)
             }
             return true
         }
         return false
     }
-    include(): IncludeToken | undefined {
+    async include(): Promise<IncludeToken | undefined> {
         const currentItem = this.content[this.line]
         if (
             this.level < currentItem.level ||
@@ -1013,9 +1011,10 @@ export class BlockTokenizer {
                 Math.min(currentHeadingShift + headingShifter, 6)
             )
             this.lexer.started = false
-            const tokens = this.lexer.lex(
-                this.lexer.include(includeLocation, from, to)
-            )
+            const content = await this.lexer.include(includeLocation, from, to);
+            const tokens = content ? await this.lexer.lex(
+                content
+            ) : []
             this.lexer.headingShift = currentHeadingShift
             this.lexer.includedLocations.delete(includeLocation)
             this.line++
@@ -1026,7 +1025,7 @@ export class BlockTokenizer {
         }
         return undefined
     }
-    includeCode(): CodeBlockToken | undefined {
+    async includeCode(): Promise<CodeBlockToken | undefined> {
         const currentItem = this.content[this.line]
         if (
             this.level < currentItem.level ||
@@ -1048,14 +1047,14 @@ export class BlockTokenizer {
             try {
                 to = toStr ? Math.max(parseInt(toStr, 10), 1) : undefined
             } catch (_) {}
-            const content = this.lexer.includeCode(includePath, from, to) ?? raw
+            const content = await this.lexer.includeCode(includePath, from, to) ?? raw
             this.line++
             return {
                 type: "codeblock",
                 from,
                 to,
                 lang,
-                content,
+                content: content ?? undefined,
             }
         }
         return undefined
@@ -1108,9 +1107,9 @@ export class BlockTokenizer {
             content,
         }
     }
-    paragraph() {
+    async paragraph(): Promise<void> {
         let paragraphLines: Line[] = []
-        let tokenFound: MdBlockToken | undefined = undefined
+        let tokenFound: MdToken | undefined = undefined
         while (
             this.line < this.content.length &&
             this.level <= this.content[this.line].level
@@ -1123,7 +1122,7 @@ export class BlockTokenizer {
             ) {
                 break
             }
-            const maybeToken = this.getBlock(true)
+            const maybeToken = await this.getBlock(true)
             if (maybeToken) {
                 tokenFound = maybeToken
                 break
@@ -1210,13 +1209,11 @@ export class BlockTokenizer {
                                 })
                                 this.line++
                             }
-                            const item = new BlockTokenizer({
+                            const item = await new BlockTokenizer({
                                 lexer: this.lexer,
                                 lines: newDef,
-                            })
-                                .tokenize()
-                                .getBlocks()
-                            definitions.push(item)
+                            }).tokenize();
+                            definitions.push(item.getBlocks())
                         } else {
                             break
                         }
@@ -1275,7 +1272,7 @@ export class BlockTokenizer {
         }
         return false
     }
-    addToken(tokenFound: MdBlockToken | undefined) {
+    addToken(tokenFound: MdToken | undefined) {
         if (tokenFound) {
             if (tokenFound.type === "definitionListItem") {
                 if (this.blockTokens.length > 0) {

@@ -23,17 +23,17 @@ interface LexerOptions {
     tabulation?: number
     metadata?: Map<string, string>
     emojis?: Record<string, EmojiRecord>
-    frontMatter?: (content: string) => unknown
+    frontMatter?: (content: string) => Promise<unknown>
     include?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string
+    ) => Promise<string | undefined>
     includeCode?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string | undefined
+    ) => Promise<string | undefined>
     includedLocations?: Set<string>
 }
 
@@ -55,17 +55,17 @@ export class Lexer {
     metadata: Map<string, string>
     emojis: Record<string, EmojiRecord>
     tabulation: number
-    frontMatter?: (content: string) => unknown
+    frontMatter?: (content: string) => Promise<unknown>
     include?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string
+    ) => Promise<string | undefined>
     includeCode?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string | undefined
+    ) => Promise<string | undefined>
     includedLocations: Set<string>
     reflinks: Map<string, LinkRef>
     footnoteIndexMap: Map<string, number>
@@ -126,12 +126,13 @@ export class Lexer {
                 return `${this.headingIndex[0]}.${this.headingIndex[1]}.${this.headingIndex[2]}.${this.headingIndex[3]}.${this.headingIndex[4]}.${this.headingIndex[5]}. `
         }
     }
-    lex(content: string): MdToken[] {
-        const blocks = new BlockTokenizer({
+    async lex(content: string): Promise<MdToken[]> {
+        const _blocks = await new BlockTokenizer({
             lexer: this,
             lines: stringToLines(content, this.tabulation),
-        })
-        return blocks.tokenize().getBlocks()
+        }).initialize();
+        const blocks = await _blocks.tokenize();
+        return blocks.getBlocks()
     }
     inlineLex(content: string): MdToken[] {
         const inline = new InlineTokenizer({
@@ -140,10 +141,10 @@ export class Lexer {
         })
         return inline.tokenize()
     }
-    static lex(
+    static async lex(
         content: string,
         options: LexerOptions & Partial<StaticLexerOptions> = {}
-    ): RootToken {
+    ): Promise<RootToken> {
         const lexer =
             options.lexer ??
             new Lexer({
@@ -154,11 +155,11 @@ export class Lexer {
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
             })
-        const blocks = new BlockTokenizer({
+        const blocks = await new BlockTokenizer({
             lexer,
             lines: stringToLines(content, lexer.tabulation),
-        })
-        const tokens = blocks.tokenize().getBlocks()
+        }).tokenize()
+        const tokens = blocks.getBlocks()
         if (lexer.footnoteDefs.size > 0 && lexer.footnoteIndexMap.size > 1) {
             tokens.push({
                 type: "footnoteEnd",

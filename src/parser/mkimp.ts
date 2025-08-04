@@ -6,17 +6,17 @@ export interface MkImpOptions {
     tabulation?: number
     metadata?: Map<string, string>
     emojis?: Record<string, EmojiRecord>
-    frontMatter?: (content: string) => unknown
+    frontMatter?: (content: string) => Promise<unknown>
     include?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string
+    ) => Promise<string | undefined>
     includeCode?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string | undefined
+    ) => Promise<string | undefined>
     withSection?: boolean
     renderTarget?: RenderTarget
 }
@@ -25,17 +25,17 @@ export class MkImp {
     tabulation: number
     metadata: Map<string, string>
     emojis: Record<string, EmojiRecord>
-    frontMatter?: (content: string) => unknown
+    frontMatter?: (content: string) => Promise<unknown>
     include?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string
+    ) => Promise<string | undefined>
     includeCode?: (
         location: string,
         from: number | undefined,
         to: number | undefined
-    ) => string | undefined
+    ) => Promise<string | undefined>
     withSection: boolean
     renderTarget: RenderTarget
     constructor(options: MkImpOptions = {}) {
@@ -48,8 +48,8 @@ export class MkImp {
         this.withSection = options?.withSection ?? false
         this.renderTarget = options?.renderTarget ?? "raw"
     }
-    ast(markdown: string): RootToken {
-        return Lexer.lex(markdown, {
+    async ast(markdown: string): Promise<RootToken> {
+        return await Lexer.lex(markdown, {
             tabulation: this.tabulation,
             metadata: this.metadata,
             emojis: this.emojis,
@@ -65,8 +65,8 @@ export class MkImp {
         })
         return render.render()
     }
-    parse(markdown: string): string {
-        const ast = this.ast(markdown)
+    async parse(markdown: string): Promise<string> {
+        const ast = await this.ast(markdown)
         return this.render(ast)
     }
 }
