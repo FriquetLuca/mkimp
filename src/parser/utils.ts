@@ -29,6 +29,8 @@ export type TokenRendering = {
     [K in TokenType]: (this: Renderer, token: ExtractToken<K>) => string
 }
 
+export type RenderTarget = "raw" | "article"
+
 export const WHITESPACE_CHARS = new Set([
     "\u0009", // Tab
     "\u000B", // Vertical Tab

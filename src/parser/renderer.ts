@@ -1,4 +1,4 @@
-import type { MdToken, RootToken, TokenRendering } from "./utils"
+import type { MdToken, RenderTarget, RootToken, TokenRendering } from "./utils"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import hljs from "highlight.js"
 import katex from "katex"
@@ -267,6 +267,11 @@ const RENDERER_FNS: TokenRendering = {
     },
 }
 
+export interface RendererOptions {
+    withSection: boolean
+    renderTarget: RenderTarget
+}
+
 export class Renderer {
     metadata: Map<string, string>
     emojis: Record<string, EmojiRecord>
@@ -276,7 +281,8 @@ export class Renderer {
     footnoteRefs: Map<number, string>
     tokens: MdToken[]
     withSection: boolean
-    constructor(root: RootToken, withSection: boolean = false) {
+    renderTarget: RenderTarget
+    constructor(root: RootToken, options: Partial<RendererOptions> = {}) {
         this.metadata = root.metadata
         this.emojis = root.emojis
         this.reflinks = root.reflinks
@@ -284,10 +290,16 @@ export class Renderer {
         this.footnoteRefs = root.footnoteRefs
         this.tokens = root.tokens
         this.footnoteIndexRefs = root.footnoteIndexRefs
-        this.withSection = withSection
+        this.withSection = options?.withSection ?? false
+        this.renderTarget = options?.renderTarget ?? "raw"
     }
     render() {
-        return `<article class="md-article" role="document" aria-label="Page content">${this.renderer(this.tokens)}</article>`
+        switch (this.renderTarget) {
+            case "article":
+                return `<article class="md-article" role="document" aria-label="Page content">${this.renderer(this.tokens)}</article>`
+            case "raw":
+                return this.renderer(this.tokens)
+        }
     }
     renderer(tokens: MdToken[]): string {
         if (!this.withSection) {

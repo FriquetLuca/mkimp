@@ -1,33 +1,33 @@
 {
-  "name": "mkimp",
-  "version": "1.0.0",
-  "description": "Write markdown like a programmer should be able to",
-  "license": "MIT",
-  "author": "FriquetLuca",
-  "type": "module",
-  "main": "./dist/index.cjs.js",
-  "module": "./dist/index.esm.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "import": "./dist/index.esm.js",
-    "require": "./dist/index.cjs.js"
-  },
-  "scripts": {
-    "build": "(rm -rf dist) && node build.mjs && tsc --emitDeclarationOnly",
-    "fmt": "npx prettier . --write",
-    "test": "jest"
-  },
-  "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/katex": "^0.16.7",
-    "esbuild": "0.25.8",
-    "jest": "^30.0.5",
-    "prettier": "3.6.2",
-    "ts-jest": "^29.4.1",
-    "typescript": "^5.9.2"
-  },
-  "dependencies": {
-    "highlight.js": "^11.11.1",
-    "katex": "^0.16.22"
-  }
+    "name": "mkimp",
+    "version": "0.0.1",
+    "description": "Write markdown like a programmer should be able to",
+    "license": "MIT",
+    "author": "FriquetLuca",
+    "type": "module",
+    "main": "./dist/index.cjs.js",
+    "module": "./dist/index.esm.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "import": "./dist/index.esm.js",
+        "require": "./dist/index.cjs.js"
+    },
+    "scripts": {
+        "build": "(rm -rf dist) && node build.mjs && tsc --emitDeclarationOnly",
+        "fmt": "npx prettier . --write",
+        "test": "jest"
+    },
+    "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "@types/katex": "^0.16.7",
+        "esbuild": "0.25.8",
+        "jest": "^30.0.5",
+        "prettier": "3.6.2",
+        "ts-jest": "^29.4.1",
+        "typescript": "^5.9.2"
+    },
+    "dependencies": {
+        "highlight.js": "^11.11.1",
+        "katex": "^0.16.22"
+    }
 }

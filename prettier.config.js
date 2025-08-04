@@ -8,4 +8,4 @@ const config = {
     semi: false,
 }
 
-module.exports = config
+export default config

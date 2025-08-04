@@ -1,29 +1,29 @@
 {
-  "compilerOptions": {
-    // Modern output for esbuild to consume
-    "target": "ES2020",
-    "module": "ESNext",
+    "compilerOptions": {
+        // Modern output for esbuild to consume
+        "target": "ES2020",
+        "module": "ESNext",
 
-    // Enable declaration files (run tsc manually with overrides)
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "declarationDir": "./dist",
+        // Enable declaration files (run tsc manually with overrides)
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "declarationDir": "./dist",
 
-    // Pathing & resolution
-    "rootDir": "./src",
-    "baseUrl": ".",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+        // Pathing & resolution
+        "rootDir": "./src",
+        "baseUrl": ".",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
 
-    // Strict typing
-    "strict": true,
-    "skipLibCheck": true,
+        // Strict typing
+        "strict": true,
+        "skipLibCheck": true,
 
-    // Useful for debugging
-    "sourceMap": true
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "examples"]
+        // Useful for debugging
+        "sourceMap": true
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "examples"]
 }
