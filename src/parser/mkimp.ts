@@ -1,4 +1,5 @@
 import type { RenderTarget, RootToken } from "./utils"
+import type { TexToken } from "./blocks"
 import { type EmojiRecord, Lexer } from "./lexer"
 import { Renderer } from "./renderer"
 
@@ -17,6 +18,7 @@ export interface MkImpOptions {
         from: number | undefined,
         to: number | undefined
     ) => Promise<string | undefined>
+    latex?: (token: TexToken) => Promise<string>
     withSection?: boolean
     renderTarget?: RenderTarget
 }
@@ -36,6 +38,7 @@ export class MkImp {
         from: number | undefined,
         to: number | undefined
     ) => Promise<string | undefined>
+    latex?: (token: TexToken) => Promise<string>
     withSection: boolean
     renderTarget: RenderTarget
     constructor(options: MkImpOptions = {}) {
@@ -45,6 +48,7 @@ export class MkImp {
         this.frontMatter = options?.frontMatter
         this.include = options?.include
         this.includeCode = options?.includeCode
+        this.latex = options?.latex
         this.withSection = options?.withSection ?? false
         this.renderTarget = options?.renderTarget ?? "raw"
     }
@@ -58,15 +62,16 @@ export class MkImp {
             includeCode: this.includeCode,
         })
     }
-    render(root: RootToken): string {
+    async render(root: RootToken): Promise<string> {
         const render = new Renderer(root, {
+            latex: this.latex,
             withSection: this.withSection,
             renderTarget: this.renderTarget,
         })
-        return render.render()
+        return await render.render()
     }
     async parse(markdown: string): Promise<string> {
         const ast = await this.ast(markdown)
-        return this.render(ast)
+        return await this.render(ast)
     }
 }

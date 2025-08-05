@@ -5,7 +5,11 @@ export {
     type TokenRendering,
     stringToLines,
 } from "./utils"
-export { BlockTokenizer, type BlockTokenizerOptions } from "./blocks"
+export {
+    BlockTokenizer,
+    type BlockTokenizerOptions,
+    type TexToken,
+} from "./blocks"
 export { InlineTokenizer, type InlineTokenizerOptions } from "./inlines"
 export { Lexer, type EmojiRecord } from "./lexer"
 export { Renderer, type RendererOptions } from "./renderer"

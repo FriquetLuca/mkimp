@@ -105,7 +105,7 @@ interface DefinitionListToken {
     items: DefinitionListItemToken[]
 }
 
-interface TexToken {
+export interface TexToken {
     type: "tex"
     text: string
     inline: boolean

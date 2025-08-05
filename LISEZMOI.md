@@ -43,7 +43,7 @@ const mkimp = new MkImp({
   },
 });
 
-console.log(mkimp.parse("# Bonjour\n\nCeci *est* un __beau__ markdown !"));
+console.log(await mkimp.parse("# Bonjour\n\nCeci *est* un __beau__ markdown !"));
 ```
 
 ---
@@ -58,6 +58,7 @@ interface MkImpOptions {
   frontMatter?: (content: string) => Promise<unknown>; // Parseur front matter personnalisé (par défaut : JSON)
   include?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // Gestion des blocs !INCLUDE
   includeCode?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // Gestion des blocs !INCLUDECODE
+  latex?: (token: TexToken) => Promise<string> // LaTeX code handler (default: KaTeX)
   withSection?: boolean; // Grouper les titres par section (par défaut : false)
   renderTarget?: RenderTarget; // Format de rendu ("raw" ou "article")
 }
@@ -79,7 +80,7 @@ class MkImp {
   constructor(options?: MkImpOptions);
 
   ast(markdown: string): Promise<RootToken>;  // Génère l’AST
-  render(root: RootToken): string;            // Rend en HTML à partir de l’AST
+  render(root: RootToken): Promise<string>;   // Rend en HTML à partir de l’AST
   parse(markdown: string): Promise<string>;   // Parse directement le markdown vers du HTML
 }
 ```

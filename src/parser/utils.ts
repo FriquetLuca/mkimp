@@ -26,7 +26,10 @@ type TokenType = MdToken["type"]
 type ExtractToken<T extends TokenType> = Extract<MdToken, { type: T }>
 
 export type TokenRendering = {
-    [K in TokenType]: (this: Renderer, token: ExtractToken<K>) => string
+    [K in TokenType]: (
+        this: Renderer,
+        token: ExtractToken<K>
+    ) => Promise<string>
 }
 
 export type RenderTarget = "raw" | "article"

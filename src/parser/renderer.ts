@@ -1,4 +1,5 @@
 import type { MdToken, RenderTarget, RootToken, TokenRendering } from "./utils"
+import type { TexToken } from "./blocks"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import hljs from "highlight.js"
 import katex from "katex"
@@ -39,7 +40,7 @@ function cleanUrl(href: string) {
 }
 
 const RENDERER_FNS: TokenRendering = {
-    emoji(token) {
+    async emoji(token) {
         const emoji = this.emojis[token.name]
         if (emoji === undefined) {
             return `:${token.name}:`
@@ -53,20 +54,20 @@ const RENDERER_FNS: TokenRendering = {
                 return emoji.char
         }
     },
-    definitionListItem(token) {
+    async definitionListItem(token) {
         const definitions = token.definitions
             .map((def) => `<dd class="md-defdef">${this.renderer(def)}</dd>`)
             .join("")
         return `<dt class="md-defterm">${this.renderer(token.term)}</dt>${definitions}`
     },
-    heading(token) {
+    async heading(token) {
         const headingContent = this.renderer(token.tokens)
         const id = token.id ? ` id="${token.id}"` : ""
         return token.isUnderline
             ? `<h${token.depth} class="md-heading md-h-underline" aria-level="${token.depth}">${token.headingIndex}${headingContent}</h${token.depth}>`
             : `<h${token.depth}${id} class="md-heading" aria-level="${token.depth}">${token.headingIndex}${headingContent}</h${token.depth}>`
     },
-    codeblock(token) {
+    async codeblock(token) {
         if (token.from !== undefined || token.to !== undefined) {
             const from = token.from || 1
             let codeText = ""
@@ -96,29 +97,29 @@ const RENDERER_FNS: TokenRendering = {
             return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code">${escape(token.content, true)}</code></pre>`
         }
     },
-    horizontal(_) {
+    async horizontal(_) {
         return '<hr class="md-line" role="separator" aria-hidden="true">'
     },
-    blockquote(token) {
+    async blockquote(token) {
         return `<blockquote class="md-blockquote" role="note" aria-label="A quote from the author">${this.renderer(token.tokens)}</blockquote>`
     },
-    list(token) {
+    async list(token) {
         const type = token.ordered ? "ol" : "ul"
         return `<${type} role="list" class="md-${type}list">${this.renderer(token.items)}</${type}>`
     },
-    listItem(token) {
+    async listItem(token) {
         const head = token.task
             ? `<input class="md-checkbox" type="checkbox" disabled${token.checked === true ? " checked" : ""}> `
             : ""
         const body = this.renderer(token.tokens)
         return `<li role="listitem" class="${token.task ? "md-taskitem" : "md-listitem"}">${head}${body}</li>`
     },
-    table(token) {
+    async table(token) {
         const header = `<thead class="md-thead" role="rowgroup"><tr class="md-htablerow">${this.renderer(token.header)}</tr></thead>`
         const body = `<tbody class="md-tbody" role="rowgroup">${token.rows.map((cells) => `<tr class="md-tablerow">${this.renderer(cells)}</tr>`).join("")}</tbody>`
         return `<table class="md-table" role="table">${header}${body}</table>`
     },
-    cell(token) {
+    async cell(token) {
         const tag = token.header ? "th" : "td"
         if (token.header) {
             const style =
@@ -134,10 +135,10 @@ const RENDERER_FNS: TokenRendering = {
             return `<${tag} class="md-tablecell" ${style}>${this.renderer(token.tokens)}</${tag}>`
         }
     },
-    footnoteRef(token) {
+    async footnoteRef(token) {
         return `<sup id="fnref:${token.ref}"><a class="md-link" href="#fn:${token.ref}">[${this.footnoteIndexRefs.get(token.ref) ?? -1}]</a></sup>`
     },
-    footnoteEnd(_) {
+    async footnoteEnd(_) {
         let result = ""
         const refSize = this.footnoteRefs.size
         for (let i = 1; i <= refSize; i++) {
@@ -151,61 +152,56 @@ const RENDERER_FNS: TokenRendering = {
         }
         return `<section class="md-footnotes"><ol class="md-fnlist" dir="auto">${result}</ol></section>`
     },
-    definitionList(token): string {
+    async definitionList(token) {
         return `<dl class="md-deflist">${this.renderer(token.items)}</dl>`
     },
-    tex(token) {
-        return katex.renderToString(token.text, {
-            strict: false,
-            throwOnError: false,
-            output: "htmlAndMathml",
-            displayMode: token.displayMode,
-        })
+    async tex(token) {
+        return await this.latex(token)
     },
-    spoiler(token) {
+    async spoiler(token) {
         const spoilerContent = this.renderer(token.tokens)
         if (token.inline) {
             return `<label class="md-spoiler"><input class="md-spoiltrigger" type="checkbox" hidden><span class="md-spoilertext">${spoilerContent}</span></label>`
         }
         return `<div class="md-spoiler-toggle"><input type="checkbox" id="md-spoiler-label" hidden><label for="md-spoiler-label" class="md-spoiler-header">${this.renderer(token.title)}</label><div class="md-spoiler-content">${spoilerContent}</div></div>`
     },
-    include(token) {
+    async include(token) {
         return this.renderer(token.tokens)
     },
-    html(token) {
+    async html(token) {
         return token.content
     },
-    paragraph(token) {
+    async paragraph(token) {
         return `<p class="md-paragraph">${this.renderer(token.tokens)}</p>`
     },
-    overline(token) {
+    async overline(token) {
         return `<u class="md-overline">${this.renderer(token.tokens)}</u>`
     },
-    newline(_) {
+    async newline(_) {
         return "<br/>"
     },
-    highlight(token) {
+    async highlight(token) {
         return `<mark class="md-highlight">${this.renderer(token.tokens)}</mark>`
     },
-    strikethrough(token) {
+    async strikethrough(token) {
         return `<del class="md-strikethrough">${this.renderer(token.tokens)}</del>`
     },
-    underline(token) {
+    async underline(token) {
         return `<u class="md-underline">${this.renderer(token.tokens)}</u>`
     },
-    bold(token) {
+    async bold(token) {
         return `<strong class="md-bold">${this.renderer(token.tokens)}</strong>`
     },
-    italic(token) {
+    async italic(token) {
         return `<em class="md-italic">${this.renderer(token.tokens)}</em>`
     },
-    text(token) {
+    async text(token) {
         return escape(token.text)
     },
-    codespan(token) {
+    async codespan(token) {
         return `<code aria-label="Code" class="md-codespan">${escape(token.text, true)}</code>`
     },
-    youtubeEmbed(token) {
+    async youtubeEmbed(token) {
         const vid = token.attributes.vid
         const title = token.title || "YouTube"
         const width = token.attributes.width || "560"
@@ -219,14 +215,14 @@ const RENDERER_FNS: TokenRendering = {
         const src = `https://www.youtube.com/embed/${vid}${urlParams.toString() ? "?" + urlParams.toString() : ""}`
         return `<div class="md-youtube"><iframe width="${width}" height="${height}" src="${src}" title="${title}" frameborder="0" ${allowfullscreen ? " allowfullscreen" : ""}></iframe></div>`
     },
-    metadata(token) {
+    async metadata(token) {
         const metadata = this.metadata.get(token.name)
         if (metadata) {
             return escape(metadata)
         }
         return ""
     },
-    link(token) {
+    async link(token) {
         const linkText = this.renderer(token.label)
         const cleanHref = cleanUrl(token.href)
         if (cleanHref === null) {
@@ -238,7 +234,7 @@ const RENDERER_FNS: TokenRendering = {
             : ' target="_blank" rel="noopener"'
         return `<a class="md-link" href="${cleanHref}"${title}${blank}>${linkText}</a>`
     },
-    reflink(token) {
+    async reflink(token) {
         const reflinkText = this.renderer(token.label)
         const refLink = this.reflinks.get(token.ref)
         if (refLink) {
@@ -256,7 +252,7 @@ const RENDERER_FNS: TokenRendering = {
         }
         return reflinkText
     },
-    image(token) {
+    async image(token) {
         const imgcleanHref = cleanUrl(token.href)
         const alt = escape(token.alt)
         if (imgcleanHref === null) {
@@ -267,9 +263,19 @@ const RENDERER_FNS: TokenRendering = {
     },
 }
 
+const defaultLatex = async (token: TexToken) => {
+    return katex.renderToString(token.text, {
+        strict: false,
+        throwOnError: false,
+        output: "htmlAndMathml",
+        displayMode: token.displayMode,
+    })
+}
+
 export interface RendererOptions {
     withSection: boolean
     renderTarget: RenderTarget
+    latex: (token: TexToken) => Promise<string>
 }
 
 export class Renderer {
@@ -279,6 +285,7 @@ export class Renderer {
     footnoteDefs: Map<string, MdToken[]>
     footnoteIndexRefs: Map<string, number>
     footnoteRefs: Map<number, string>
+    latex: (token: TexToken) => Promise<string>
     tokens: MdToken[]
     withSection: boolean
     renderTarget: RenderTarget
@@ -292,16 +299,18 @@ export class Renderer {
         this.footnoteIndexRefs = root.footnoteIndexRefs
         this.withSection = options?.withSection ?? false
         this.renderTarget = options?.renderTarget ?? "raw"
+        this.latex = options?.latex ?? defaultLatex
     }
-    render() {
+    async render() {
+        const content = await this.renderer(this.tokens)
         switch (this.renderTarget) {
             case "article":
-                return `<article class="md-article" role="document" aria-label="Page content">${this.renderer(this.tokens)}</article>`
+                return `<article class="md-article" role="document" aria-label="Page content">${content}</article>`
             case "raw":
-                return this.renderer(this.tokens)
+                return content
         }
     }
-    renderer(tokens: MdToken[]): string {
+    async renderer(tokens: MdToken[]): Promise<string> {
         if (!this.withSection) {
             // Simple rendering without sections
             return tokens
