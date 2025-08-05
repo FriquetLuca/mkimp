@@ -1,9 +1,9 @@
 # MkImp
 
 <p align="center">
-    <img  src="https://img.shields.io/badge/license-MIT-green">
-    <img  src="https://img.shields.io/badge/typescript-v5.9.2-orange">
-    <img  src="https://img.shields.io/badge/node-v22.11.0-yellow">
+    <img src="https://img.shields.io/badge/license-MIT-green">
+    <img src="https://img.shields.io/badge/typescript-v5.9.2-orange">
+    <img src="https://img.shields.io/badge/node-v22.11.0-yellow">
 </p>
 
 **MkImp** lets you write Markdown like a programmer should be able to — with power, precision, and extensibility.
@@ -14,7 +14,7 @@ If you'd like to propose new features, please open an issue or a pull request. I
 
 MkImp uses:
 - [`highlight.js`](https://highlightjs.org/) for syntax highlighting
-- [`KaTeX`](https://katex.org/) for mathematical formulas
+- [`KaTeX`](https://katex.org/) for mathematical formulas (you can use another LaTeX renderer)
 - Optionally supports [`Mermaid`](https://mermaid.js.org/) for diagrams (you must handle rendering yourself)
 
 ---

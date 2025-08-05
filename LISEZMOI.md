@@ -1,9 +1,9 @@
 # MkImp
 
 <p align="center">
-    <img  src="https://img.shields.io/badge/license-MIT-green">
-    <img  src="https://img.shields.io/badge/typescript-v5.9.2-orange">
-    <img  src="https://img.shields.io/badge/node-v22.11.0-yellow">
+    <img src="https://img.shields.io/badge/license-MIT-green">
+    <img src="https://img.shields.io/badge/typescript-v5.9.2-orange">
+    <img src="https://img.shields.io/badge/node-v22.11.0-yellow">
 </p>
 
 **MkImp** vous permet d’écrire du Markdown comme un(e) vrai(e) développeur(se) — avec puissance, précision et extensibilité.
@@ -14,7 +14,7 @@ Si vous souhaitez proposer une fonctionnalité, ouvrez une issue ou une pull req
 
 MkImp utilise :
 - [`highlight.js`](https://highlightjs.org/) pour la coloration syntaxique
-- [`KaTeX`](https://katex.org/) pour les formules mathématiques
+- [`KaTeX`](https://katex.org/) pour les formules mathématiques (vous pouvez utiliser un autre générateur de rendu LaTeX)
 - Et est **compatible** avec [`Mermaid`](https://mermaid.js.org/) pour les diagrammes (vous devez gérer le rendu)
 
 ---
