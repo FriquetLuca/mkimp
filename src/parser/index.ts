@@ -4,6 +4,7 @@ export {
     type RootToken,
     type TokenRendering,
     stringToLines,
+    escapeText,
 } from "./utils"
 export {
     BlockTokenizer,

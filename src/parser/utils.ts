@@ -102,3 +102,38 @@ export function stringToLines(content: string, tabSpace: number): Line[] {
 
     return lines
 }
+
+const escapeReplacements: { [index: string]: string } = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+}
+const getEscapeReplacement = (ch: string) => escapeReplacements[ch]
+
+export function escapeText(html: string, encode?: boolean) {
+    if (encode) {
+        if (/[&<>"']/.test(html)) {
+            return html.replace(/[&<>"']/g, getEscapeReplacement)
+        }
+    } else {
+        if (/[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/.test(html)) {
+            return html.replace(
+                /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g,
+                getEscapeReplacement
+            )
+        }
+    }
+
+    return html
+}
+
+export function cleanUrl(href: string) {
+    try {
+        href = encodeURI(href).replace(/%25/g, "%")
+    } catch {
+        return null
+    }
+    return href
+}

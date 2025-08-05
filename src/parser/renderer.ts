@@ -1,43 +1,15 @@
-import type { MdToken, RenderTarget, RootToken, TokenRendering } from "./utils"
+import {
+    cleanUrl,
+    escapeText,
+    type MdToken,
+    type RenderTarget,
+    type RootToken,
+    type TokenRendering,
+} from "./utils"
 import type { TexToken } from "./blocks"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import hljs from "highlight.js"
 import katex from "katex"
-
-const escapeReplacements: { [index: string]: string } = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-}
-const getEscapeReplacement = (ch: string) => escapeReplacements[ch]
-
-function escape(html: string, encode?: boolean) {
-    if (encode) {
-        if (/[&<>"']/.test(html)) {
-            return html.replace(/[&<>"']/g, getEscapeReplacement)
-        }
-    } else {
-        if (/[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/.test(html)) {
-            return html.replace(
-                /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g,
-                getEscapeReplacement
-            )
-        }
-    }
-
-    return html
-}
-
-function cleanUrl(href: string) {
-    try {
-        href = encodeURI(href).replace(/%25/g, "%")
-    } catch {
-        return null
-    }
-    return href
-}
 
 const RENDERER_FNS: TokenRendering = {
     async emoji(token) {
@@ -78,7 +50,7 @@ const RENDERER_FNS: TokenRendering = {
                     language: token.lang,
                 }).value
             } else {
-                codeText = escape(token.content, true)
+                codeText = escapeText(token.content, true)
             }
             return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code${lang}"><table class="md-code-table"><colgroup><col /><col class="md-table-line-space" /><col /></colgroup><tbody>${codeText
                 .split(/\r?\n/)
@@ -92,9 +64,9 @@ const RENDERER_FNS: TokenRendering = {
                 const lang = token.lang ? `language-${token.lang}` : ""
                 return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code ${lang}">${hljs.highlight(token.content, { language: token.lang }).value}</code></pre>`
             } else if (token.lang === "mermaid") {
-                return `<pre role="region" aria-label="Code block" class="md-mermaid mermaid">${escape(token.content, true)}</pre>`
+                return `<pre role="region" aria-label="Code block" class="md-mermaid mermaid">${escapeText(token.content, true)}</pre>`
             }
-            return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code">${escape(token.content, true)}</code></pre>`
+            return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code">${escapeText(token.content, true)}</code></pre>`
         }
     },
     async horizontal(_) {
@@ -196,10 +168,10 @@ const RENDERER_FNS: TokenRendering = {
         return `<em class="md-italic">${this.renderer(token.tokens)}</em>`
     },
     async text(token) {
-        return escape(token.text)
+        return escapeText(token.text)
     },
     async codespan(token) {
-        return `<code aria-label="Code" class="md-codespan">${escape(token.text, true)}</code>`
+        return `<code aria-label="Code" class="md-codespan">${escapeText(token.text, true)}</code>`
     },
     async youtubeEmbed(token) {
         const vid = token.attributes.vid
@@ -218,7 +190,7 @@ const RENDERER_FNS: TokenRendering = {
     async metadata(token) {
         const metadata = this.metadata.get(token.name)
         if (metadata) {
-            return escape(metadata)
+            return escapeText(metadata)
         }
         return ""
     },
@@ -228,7 +200,7 @@ const RENDERER_FNS: TokenRendering = {
         if (cleanHref === null) {
             return linkText
         }
-        const title = token.title ? ` title="${escape(token.title)}"` : ""
+        const title = token.title ? ` title="${escapeText(token.title)}"` : ""
         const blank = cleanHref.startsWith("#")
             ? ""
             : ' target="_blank" rel="noopener"'
@@ -243,7 +215,7 @@ const RENDERER_FNS: TokenRendering = {
                 return reflinkText
             }
             const title = refLink.title
-                ? ` title="${escape(refLink.title)}"`
+                ? ` title="${escapeText(refLink.title)}"`
                 : ""
             const blank = cleanHref.startsWith("#")
                 ? ""
@@ -254,11 +226,11 @@ const RENDERER_FNS: TokenRendering = {
     },
     async image(token) {
         const imgcleanHref = cleanUrl(token.href)
-        const alt = escape(token.alt)
+        const alt = escapeText(token.alt)
         if (imgcleanHref === null) {
             return alt
         }
-        const title = token.title ? ` title="${escape(token.title)}"` : ""
+        const title = token.title ? ` title="${escapeText(token.title)}"` : ""
         return `<img src="${imgcleanHref}" alt="${alt}" class="md-image"${title}>`
     },
 }

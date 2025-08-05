@@ -1,11 +1,11 @@
 Planned:
-1. remove html comment
-1. treat style / scripts / svg correctly
+1. Comments
+    // Line Comment
+    /* Inline Comment Block */
 1. Table of content
 2. Index table
 3. Colors
-    [col:#FFFFFF]{Go left}
-4. Text align (left / center / right)
+    {color:red}This text is red.{/color}
 5. Abbreviations
     From:
     The HTML specification
@@ -25,19 +25,13 @@ Planned:
 
 Maybe:
 
-1. Comments
-    %% This is a comment in Obsidian %%
-    Here's a paragraph that will be visible.
-
-    [This is a comment that will be hidden.]: # 
-
-    And here's another paragraph that's visible.
+1. remove html comment
 2. sup (^...^) sub (~...~)
 3. Embedded PDFs or Documents
     ![](./file.pdf)
     ![](video.mp4)
 6. Frontmatter Conditional Rendering
-    {{ if .Params.draft }}
+    {{ if Params.draft }}
     🚧 This post is a draft.
     {{ end }}
 7. Labeled equations
@@ -45,9 +39,3 @@ Maybe:
 8. Story Engines
     ## Start
     You wake up in a dark room. [[Go left]] or [[Go right]]?
-9. Dynamic Choose-Your-Path Logic
-    ::: if choice == "forest"
-    You went into the forest...
-    ::: else
-    You stayed home.
-    ::: 
