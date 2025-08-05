@@ -110,10 +110,10 @@ export const htmlPatterns: {
     close: RegExp
     canInterrupt: boolean
 }[] = [
-    // Type 1: <script>, <pre>, <style>, <textarea>
+    // Type 1: <script>, <pre>, <style>, <textarea>, <svg>
     {
-        open: /^<(script|pre|style|textarea)(\s|>|$)/i,
-        close: /<\/(script|pre|style|textarea)>/i,
+        open: /^<(script|pre|style|svg|textarea)(\s|>|$)/i,
+        close: /<\/(script|pre|style|svg|textarea)>/i,
         canInterrupt: true,
     },
     // Type 2: <!--
