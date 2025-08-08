@@ -492,6 +492,7 @@ export class InlineTokenizer {
                             this.index++
                         }
                         if (hasEnd) {
+                            this.#cleanBuffer(result)
                             result.push({
                                 type: "tex",
                                 inline: true,
