@@ -87,6 +87,7 @@ interface CodespanToken {
 interface MetadataToken {
     type: "metadata"
     name: string
+    value: string | number | boolean | BigInt | undefined
 }
 
 interface YoutubeToken {
@@ -212,12 +213,14 @@ export class InlineTokenizer {
                         }
                         if (endMeta) {
                             this.#cleanBuffer(result)
+                            const name = this.content.slice(
+                                lastIndex + 1,
+                                this.index
+                            )
                             result.push({
                                 type: "metadata",
-                                name: this.content.slice(
-                                    lastIndex + 1,
-                                    this.index
-                                ),
+                                name,
+                                value: this.lexer.metadata.get(name)
                             })
                             this.index += 2
                         } else {

@@ -1013,7 +1013,13 @@ export class BlockTokenizer {
             )
             this.lexer.started = false
             const content = await this.lexer.include(includeLocation, from, to)
+            const currentMetadata = this.lexer.metadata
+            this.lexer.metadata = new Map()
+            for(const [key, data] of currentMetadata) {
+                this.lexer.metadata.set(key, data)
+            }
             const tokens = content ? await this.lexer.lex(content) : []
+            this.lexer.metadata = currentMetadata
             this.lexer.headingShift = currentHeadingShift
             this.lexer.includedLocations.delete(includeLocation)
             this.line++

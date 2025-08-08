@@ -13,7 +13,7 @@ export type MdToken = MdBlockToken | MdInlineToken
 
 export interface RootToken {
     type: "root"
-    metadata: Map<string, string>
+    metadata: Map<string, string|number|boolean|BigInt>
     reflinks: Map<string, LinkRef>
     emojis: Record<string, EmojiRecord>
     footnoteDefs: Map<string, MdToken[]>

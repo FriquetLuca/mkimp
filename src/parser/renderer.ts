@@ -188,9 +188,8 @@ const RENDERER_FNS: TokenRendering = {
         return `<div class="md-youtube"><iframe width="${width}" height="${height}" src="${src}" title="${title}" frameborder="0" ${allowfullscreen ? " allowfullscreen" : ""}></iframe></div>`
     },
     async metadata(token) {
-        const metadata = this.metadata.get(token.name)
-        if (metadata) {
-            return escapeText(metadata)
+        if (token.value) {
+            return typeof token.value === "string" ? escapeText(token.value) : escapeText(token.value.toString())
         }
         return ""
     },
@@ -251,7 +250,7 @@ export interface RendererOptions {
 }
 
 export class Renderer {
-    metadata: Map<string, string>
+    metadata: Map<string, string|number|boolean|BigInt>
     emojis: Record<string, EmojiRecord>
     reflinks: Map<string, LinkRef>
     footnoteDefs: Map<string, MdToken[]>
