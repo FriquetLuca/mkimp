@@ -1,12 +1,14 @@
 import {
     cleanUrl,
     escapeText,
+    renderTocNodes,
+    type TOCNode,
     type MdToken,
     type RenderTarget,
     type RootToken,
     type TokenRendering,
 } from "./utils"
-import type { TexToken } from "./blocks"
+import type { HeadingToken, TexToken } from "./blocks"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import hljs from "highlight.js"
 import katex from "katex"
@@ -27,13 +29,15 @@ const RENDERER_FNS: TokenRendering = {
         }
     },
     async definitionListItem(token) {
-        const definitions = token.definitions
-            .map((def) => `<dd class="md-defdef">${this.renderer(def)}</dd>`)
-            .join("")
-        return `<dt class="md-defterm">${this.renderer(token.term)}</dt>${definitions}`
+        let definitions = ""
+        for(const def of token.definitions) {
+            definitions += `<dd class="md-defdef">${await this.renderer(def)}</dd>`
+        }
+        const term = await this.renderer(token.term)
+        return `<dt class="md-defterm">${term}</dt>${definitions}`
     },
     async heading(token) {
-        const headingContent = this.renderer(token.tokens)
+        const headingContent = await this.renderer(token.tokens)
         const id = token.id ? ` id="${token.id}"` : ""
         return token.isUnderline
             ? `<h${token.depth} class="md-heading md-h-underline" aria-level="${token.depth}">${token.headingIndex}${headingContent}</h${token.depth}>`
@@ -55,8 +59,7 @@ const RENDERER_FNS: TokenRendering = {
             return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code${lang}"><table class="md-code-table"><colgroup><col /><col class="md-table-line-space" /><col /></colgroup><tbody>${codeText
                 .split(/\r?\n/)
                 .map(
-                    (c, i) =>
-                        `<tr class="md-code-row"><td class="md-number-ln">${i + from}</td><td></td><td class="md-code-ln">${c}</td></tr>`
+                    (c, i) => `<tr class="md-code-row"><td class="md-number-ln">${i + from}</td><td></td><td class="md-code-ln">${c}</td></tr>`
                 )
                 .join("")}</tbody></table></code></pre>`
         } else {
@@ -73,38 +76,40 @@ const RENDERER_FNS: TokenRendering = {
         return '<hr class="md-line" role="separator" aria-hidden="true">'
     },
     async blockquote(token) {
-        return `<blockquote class="md-blockquote" role="note" aria-label="A quote from the author">${this.renderer(token.tokens)}</blockquote>`
+        return `<blockquote class="md-blockquote" role="note" aria-label="A quote from the author">${await this.renderer(token.tokens)}</blockquote>`
     },
     async list(token) {
         const type = token.ordered ? "ol" : "ul"
-        return `<${type} role="list" class="md-${type}list">${this.renderer(token.items)}</${type}>`
+        return `<${type} role="list" class="md-${type}list">${await this.renderer(token.items)}</${type}>`
     },
     async listItem(token) {
         const head = token.task
             ? `<input class="md-checkbox" type="checkbox" disabled${token.checked === true ? " checked" : ""}> `
             : ""
-        const body = this.renderer(token.tokens)
+        const body = await this.renderer(token.tokens)
         return `<li role="listitem" class="${token.task ? "md-taskitem" : "md-listitem"}">${head}${body}</li>`
     },
     async table(token) {
-        const header = `<thead class="md-thead" role="rowgroup"><tr class="md-htablerow">${this.renderer(token.header)}</tr></thead>`
-        const body = `<tbody class="md-tbody" role="rowgroup">${token.rows.map((cells) => `<tr class="md-tablerow">${this.renderer(cells)}</tr>`).join("")}</tbody>`
+        const header = `<thead class="md-thead" role="rowgroup"><tr class="md-htablerow">${await this.renderer(token.header)}</tr></thead>`
+        let body = `<tbody class="md-tbody" role="rowgroup">`
+        for(const cells of token.rows) {
+            body += `<tr class="md-tablerow">${await this.renderer(cells)}</tr>`
+        }
+        body += `</tbody>`
         return `<table class="md-table" role="table">${header}${body}</table>`
     },
     async cell(token) {
         const tag = token.header ? "th" : "td"
         if (token.header) {
-            const style =
-                token.align !== "default"
-                    ? ` style="text-align:${token.align}"`
-                    : ""
-            return `<${tag} class="md-tablecell" ${style}>${this.renderer(token.tokens)}</${tag}>`
+            const style = token.align !== "default"
+                ? ` style="text-align:${token.align}"`
+                : ""
+            return `<${tag} class="md-tablecell" ${style}>${await this.renderer(token.tokens)}</${tag}>`
         } else {
-            const style =
-                token.align !== "default"
-                    ? ` style="text-align:${token.align}"`
-                    : ""
-            return `<${tag} class="md-tablecell" ${style}>${this.renderer(token.tokens)}</${tag}>`
+            const style = token.align !== "default"
+                ? ` style="text-align:${token.align}"`
+                : ""
+            return `<${tag} class="md-tablecell" ${style}>${await this.renderer(token.tokens)}</${tag}>`
         }
     },
     async footnoteRef(token) {
@@ -117,7 +122,7 @@ const RENDERER_FNS: TokenRendering = {
             const ref = this.footnoteRefs.get(i)!
             const def = this.footnoteDefs.get(ref)
             if (def !== undefined) {
-                result += `<li class="md-fnitem" id="fn:${ref}">${this.renderer(def)}</li>`
+                result += `<li class="md-fnitem" id="fn:${ref}">${await this.renderer(def)}</li>`
             } else {
                 result += `<li class="md-fnitem" id="fn:${ref}">[${ref}]</li>`
             }
@@ -125,47 +130,47 @@ const RENDERER_FNS: TokenRendering = {
         return `<section class="md-footnotes"><ol class="md-fnlist" dir="auto">${result}</ol></section>`
     },
     async definitionList(token) {
-        return `<dl class="md-deflist">${this.renderer(token.items)}</dl>`
+        return `<dl class="md-deflist">${await this.renderer(token.items)}</dl>`
     },
     async tex(token) {
         return await this.latex(token)
     },
     async spoiler(token) {
-        const spoilerContent = this.renderer(token.tokens)
+        const spoilerContent = await this.renderer(token.tokens)
         if (token.inline) {
             return `<label class="md-spoiler"><input class="md-spoiltrigger" type="checkbox" hidden><span class="md-spoilertext">${spoilerContent}</span></label>`
         }
-        return `<div class="md-spoiler-toggle"><input type="checkbox" id="md-spoiler-label" hidden><label for="md-spoiler-label" class="md-spoiler-header">${this.renderer(token.title)}</label><div class="md-spoiler-content">${spoilerContent}</div></div>`
+        return `<div class="md-spoiler-toggle"><input type="checkbox" id="md-spoiler-label" hidden><label for="md-spoiler-label" class="md-spoiler-header">${await this.renderer(token.title)}</label><div class="md-spoiler-content">${spoilerContent}</div></div>`
     },
     async include(token) {
-        return this.renderer(token.tokens)
+        return await this.renderer(token.tokens)
     },
     async html(token) {
         return token.content
     },
     async paragraph(token) {
-        return `<p class="md-paragraph">${this.renderer(token.tokens)}</p>`
+        return `<p class="md-paragraph">${await this.renderer(token.tokens)}</p>`
     },
     async overline(token) {
-        return `<u class="md-overline">${this.renderer(token.tokens)}</u>`
+        return `<u class="md-overline">${await this.renderer(token.tokens)}</u>`
     },
     async newline(_) {
         return "<br/>"
     },
     async highlight(token) {
-        return `<mark class="md-highlight">${this.renderer(token.tokens)}</mark>`
+        return `<mark class="md-highlight">${await this.renderer(token.tokens)}</mark>`
     },
     async strikethrough(token) {
-        return `<del class="md-strikethrough">${this.renderer(token.tokens)}</del>`
+        return `<del class="md-strikethrough">${await this.renderer(token.tokens)}</del>`
     },
     async underline(token) {
-        return `<u class="md-underline">${this.renderer(token.tokens)}</u>`
+        return `<u class="md-underline">${await this.renderer(token.tokens)}</u>`
     },
     async bold(token) {
-        return `<strong class="md-bold">${this.renderer(token.tokens)}</strong>`
+        return `<strong class="md-bold">${await this.renderer(token.tokens)}</strong>`
     },
     async italic(token) {
-        return `<em class="md-italic">${this.renderer(token.tokens)}</em>`
+        return `<em class="md-italic">${await this.renderer(token.tokens)}</em>`
     },
     async text(token) {
         return escapeText(token.text)
@@ -194,7 +199,7 @@ const RENDERER_FNS: TokenRendering = {
         return ""
     },
     async link(token) {
-        const linkText = this.renderer(token.label)
+        const linkText = await this.renderer(token.label)
         const cleanHref = cleanUrl(token.href)
         if (cleanHref === null) {
             return linkText
@@ -206,7 +211,7 @@ const RENDERER_FNS: TokenRendering = {
         return `<a class="md-link" href="${cleanHref}"${title}${blank}>${linkText}</a>`
     },
     async reflink(token) {
-        const reflinkText = this.renderer(token.label)
+        const reflinkText = await this.renderer(token.label)
         const refLink = this.reflinks.get(token.ref)
         if (refLink) {
             const cleanHref = cleanUrl(refLink.link)
@@ -232,6 +237,28 @@ const RENDERER_FNS: TokenRendering = {
         const title = token.title ? ` title="${escapeText(token.title)}"` : ""
         return `<img src="${imgcleanHref}" alt="${alt}" class="md-image"${title}>`
     },
+    async tableOfContent(_) {
+        const root: TOCNode[] = [];
+        const stack: { depth: number; node: TOCNode }[] = [];
+
+        for (const token of this.tableOfContents) {
+            const node: TOCNode = { token, children: [] };
+
+            while (stack.length > 0 && stack[stack.length - 1].depth >= token.depth) {
+                stack.pop();
+            }
+
+            if (stack.length === 0) {
+                root.push(node);
+            } else {
+                stack[stack.length - 1].node.children.push(node);
+            }
+
+            stack.push({ depth: token.depth, node });
+        }
+
+        return await renderTocNodes.call(this, root);
+    }
 }
 
 const defaultLatex = async (token: TexToken) => {
@@ -256,6 +283,7 @@ export class Renderer {
     footnoteDefs: Map<string, MdToken[]>
     footnoteIndexRefs: Map<string, number>
     footnoteRefs: Map<number, string>
+    tableOfContents: HeadingToken[]
     latex: (token: TexToken) => Promise<string>
     tokens: MdToken[]
     withSection: boolean
@@ -268,6 +296,7 @@ export class Renderer {
         this.footnoteRefs = root.footnoteRefs
         this.tokens = root.tokens
         this.footnoteIndexRefs = root.footnoteIndexRefs
+        this.tableOfContents = root.tableOfContents
         this.withSection = options?.withSection ?? false
         this.renderTarget = options?.renderTarget ?? "raw"
         this.latex = options?.latex ?? defaultLatex
@@ -284,11 +313,11 @@ export class Renderer {
     async renderer(tokens: MdToken[]): Promise<string> {
         if (!this.withSection) {
             // Simple rendering without sections
-            return tokens
-                .map((token) =>
-                    RENDERER_FNS[token.type].call(this, token as any)
-                )
-                .join("")
+            let result = ""
+            for(const token of tokens) {
+                result += await RENDERER_FNS[token.type].call(this, token as any)
+            }
+            return result
         }
 
         // Group tokens into sections based on headings
@@ -307,25 +336,26 @@ export class Renderer {
         if (currentSection.length > 0) {
             sections.push(currentSection)
         }
-        return sections
-            .map((sectionTokens) => {
-                const headingToken = sectionTokens.find(
-                    (t) => t.type === "heading"
-                )
-                const headingId = headingToken ? headingToken.id : undefined
 
-                const inner = sectionTokens
-                    .map((token) =>
-                        RENDERER_FNS[token.type].call(this, token as any)
-                    )
-                    .join("")
+        let result = ""
+        for(const sectionTokens of sections) {
+            const headingToken = sectionTokens.find(
+                (t) => t.type === "heading"
+            )
+            const headingId = headingToken ? headingToken.id : undefined
 
-                if (headingId) {
-                    return `<section class="md-section" role="region" aria-labelledby="${headingId}">${inner}</section>`
-                } else {
-                    return `<section>${inner}</section>`
-                }
-            })
-            .join("")
+            let inner = ""
+            for(const token of sectionTokens) {
+                inner += await RENDERER_FNS[token.type].call(this, token as any)
+            }
+
+            if (headingId) {
+                result += `<section class="md-section" role="region" aria-labelledby="${headingId}">${inner}</section>`
+            } else {
+                result += `<section>${inner}</section>`
+            }
+        }
+
+        return result
     }
 }

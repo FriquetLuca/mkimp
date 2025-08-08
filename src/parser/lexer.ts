@@ -1,4 +1,4 @@
-import { BlockTokenizer } from "./blocks"
+import { BlockTokenizer, type HeadingToken } from "./blocks"
 import { InlineTokenizer } from "./inlines"
 import { Slugger } from "./slugger"
 import { type MdToken, type RootToken, stringToLines } from "./utils"
@@ -35,6 +35,7 @@ interface LexerOptions {
         to: number | undefined
     ) => Promise<string | undefined>
     includedLocations?: Set<string>
+    tableOfContents?: HeadingToken[]
 }
 
 interface StaticLexerOptions {
@@ -71,6 +72,7 @@ export class Lexer {
     footnoteIndexMap: Map<string, number>
     footnoteRef: Map<number, string>
     footnoteDefs: Map<string, MdToken[]>
+    tableOfContents: HeadingToken[]
     slugger: Slugger
     constructor(options: Partial<LexerOptions> = {}) {
         this.headingIndex = [0, 0, 0, 0, 0, 0]
@@ -88,6 +90,7 @@ export class Lexer {
         this.footnoteIndexMap = new Map()
         this.emojis = options?.emojis ?? {}
         this.slugger = new Slugger()
+        this.tableOfContents = options?.tableOfContents ?? []
     }
     newHeading(depth: number) {
         switch (depth) {
@@ -155,6 +158,7 @@ export class Lexer {
                 include: options?.include,
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
+                tableOfContents: options?.tableOfContents,
             })
         const _blocks = await new BlockTokenizer({
             lexer,
@@ -174,6 +178,7 @@ export class Lexer {
             footnoteDefs: lexer.footnoteDefs,
             footnoteRefs: lexer.footnoteRef,
             footnoteIndexRefs: lexer.footnoteIndexMap,
+            tableOfContents: lexer.tableOfContents,
             emojis: lexer.emojis,
             tokens,
         }
@@ -191,6 +196,7 @@ export class Lexer {
                 include: options?.include,
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
+                tableOfContents: options?.tableOfContents,
             })
         const inline = new InlineTokenizer({
             lexer,

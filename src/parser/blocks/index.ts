@@ -34,7 +34,7 @@ import {
 } from "./utils"
 import { htmlPatterns } from "../html"
 
-interface HeadingToken {
+export interface HeadingToken {
     type: "heading"
     id: string | undefined
     isUnderline: boolean
@@ -133,6 +133,10 @@ interface FootnoteEndToken {
     type: "footnoteEnd"
 }
 
+interface TableOfContentToken {
+    type: "tableOfContent"
+}
+
 export type MdBlockToken =
     | HeadingToken
     | CodeBlockToken
@@ -150,6 +154,7 @@ export type MdBlockToken =
     | HTMLToken
     | ParagraphToken
     | FootnoteEndToken
+    | TableOfContentToken
 
 export interface BlockTokenizerOptions {
     lexer: Lexer
@@ -157,6 +162,22 @@ export interface BlockTokenizerOptions {
 }
 
 const dashMatch = /^-{3,}$/
+
+function isBlockToken(currentContent: string, lexer: Lexer, level: number, line: number, lines: Line[]) {
+    return isOrderedListItem(currentContent) ||
+        isUnorderedListItem(currentContent) ||
+        isFenceCodeBlock(level, line, lines) ||
+        isHashHeading(level, line, lines) ||
+        isHorizontal(level, line, lines) ||
+        isTable(level, line, lines) ||
+        isRefLink(level, line, lines) ||
+        (lexer.includeCode !== undefined &&
+            isIncludeCode(level, line, lines)) ||
+        (lexer.include !== undefined &&
+            isInclude(level, line, lines)) ||
+        isHtml(level, line, lines) ||
+        isFootnoteRef(level, line, lines)
+}
 
 export class BlockTokenizer {
     lexer: Lexer
@@ -217,6 +238,10 @@ export class BlockTokenizer {
     }
     async getBlock(pskip = false): Promise<MdToken | undefined> {
         let token: MdToken | undefined = this.hashHeading()
+        if (token) {
+            return token
+        }
+        token = this.tableOfContent()
         if (token) {
             return token
         }
@@ -518,6 +543,19 @@ export class BlockTokenizer {
             character,
         }
     }
+    tableOfContent(): TableOfContentToken | undefined {
+        const firstLine = this.content[this.line]
+        if (this.level < firstLine.level) {
+            return undefined
+        }
+        if (firstLine.content.trimEnd().toLowerCase() === "!tableofcontent") {
+            this.line++
+            return {
+                type: "tableOfContent"
+            }
+        }
+        return undefined
+    }
     async blockQuote(): Promise<BlockQuoteToken | undefined> {
         const firstLine = this.content[this.line]
         if (this.level < firstLine.level) {
@@ -538,19 +576,13 @@ export class BlockTokenizer {
                 break
             }
             if (
-                isOrderedListItem(currentContent) ||
-                isUnorderedListItem(currentContent) ||
-                isFenceCodeBlock(this.level, this.line, this.content) ||
-                isHashHeading(this.level, this.line, this.content) ||
-                isHorizontal(this.level, this.line, this.content) ||
-                isTable(this.level, this.line, this.content) ||
-                isRefLink(this.level, this.line, this.content) ||
-                (this.lexer.includeCode !== undefined &&
-                    isIncludeCode(this.level, this.line, this.content)) ||
-                (this.lexer.include !== undefined &&
-                    isInclude(this.level, this.line, this.content)) ||
-                isHtml(this.level, this.line, this.content) ||
-                isFootnoteRef(this.level, this.line, this.content)
+                isBlockToken(
+                    currentContent,
+                    this.lexer,
+                    this.level,
+                    this.line,
+                    this.content,
+                )
             ) {
                 // Skip blocks
                 break
@@ -618,25 +650,13 @@ export class BlockTokenizer {
                         this.line++
                         continue
                     }
-                    const isBlock =
-                        isOrderedListItem(itemContent) ||
-                        isUnorderedListItem(itemContent) ||
-                        isFenceCodeBlock(this.level, this.line, this.content) ||
-                        isBlockquote(this.level, this.line, this.content) ||
-                        isHashHeading(this.level, this.line, this.content) ||
-                        isHorizontal(this.level, this.line, this.content) ||
-                        isTable(this.level, this.line, this.content) ||
-                        isRefLink(this.level, this.line, this.content) ||
-                        (this.lexer.includeCode !== undefined &&
-                            isIncludeCode(
-                                this.level,
-                                this.line,
-                                this.content
-                            )) ||
-                        (this.lexer.include !== undefined &&
-                            isInclude(this.level, this.line, this.content)) ||
-                        isHtml(this.level, this.line, this.content) ||
-                        isFootnoteRef(this.level, this.line, this.content)
+                    const isBlock = isBlockToken(
+                            itemContent,
+                            this.lexer,
+                            this.level,
+                            this.line,
+                            this.content,
+                        )
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -735,25 +755,13 @@ export class BlockTokenizer {
                         this.line++
                         continue
                     }
-                    const isBlock =
-                        isOrderedListItem(itemContent) ||
-                        isUnorderedListItem(itemContent) ||
-                        isFenceCodeBlock(this.level, this.line, this.content) ||
-                        isBlockquote(this.level, this.line, this.content) ||
-                        isHashHeading(this.level, this.line, this.content) ||
-                        isHorizontal(this.level, this.line, this.content) ||
-                        isTable(this.level, this.line, this.content) ||
-                        isRefLink(this.level, this.line, this.content) ||
-                        (this.lexer.includeCode !== undefined &&
-                            isIncludeCode(
-                                this.level,
-                                this.line,
-                                this.content
-                            )) ||
-                        (this.lexer.include !== undefined &&
-                            isInclude(this.level, this.line, this.content)) ||
-                        isHtml(this.level, this.line, this.content) ||
-                        isFootnoteRef(this.level, this.line, this.content)
+                    const isBlock = isBlockToken(
+                            itemContent,
+                            this.lexer,
+                            this.level,
+                            this.line,
+                            this.content,
+                        )
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -850,24 +858,13 @@ export class BlockTokenizer {
                         // Shouldn't be one of the following
                         this.level < currentItem.level || // blockcode
                         currentItem.content.trimEnd().length === 0 ||
-                        isOrderedListItem(currentItem.content) ||
-                        isUnorderedListItem(currentItem.content) ||
-                        isFenceCodeBlock(this.level, this.line, this.content) ||
-                        isBlockquote(this.level, this.line, this.content) ||
-                        isHashHeading(this.level, this.line, this.content) ||
-                        isHorizontal(this.level, this.line, this.content) ||
-                        isTable(this.level, this.line, this.content) ||
-                        isRefLink(this.level, this.line, this.content) ||
-                        (this.lexer.includeCode !== undefined &&
-                            isIncludeCode(
-                                this.level,
-                                this.line,
-                                this.content
-                            )) ||
-                        (this.lexer.include !== undefined &&
-                            isInclude(this.level, this.line, this.content)) ||
-                        isHtml(this.level, this.line, this.content) ||
-                        isFootnoteRef(this.level, this.line, this.content)
+                        isBlockToken(
+                            currentItem.content,
+                            this.lexer,
+                            this.level,
+                            this.line,
+                            this.content,
+                        )
                     ) {
                         break
                     }
@@ -918,21 +915,13 @@ export class BlockTokenizer {
                     this.line++
                     continue
                 }
-                const isBlock =
-                    isOrderedListItem(itemContent) ||
-                    isUnorderedListItem(itemContent) ||
-                    isFenceCodeBlock(this.level, this.line, this.content) ||
-                    isBlockquote(this.level, this.line, this.content) ||
-                    isHashHeading(this.level, this.line, this.content) ||
-                    isHorizontal(this.level, this.line, this.content) ||
-                    isTable(this.level, this.line, this.content) ||
-                    isRefLink(this.level, this.line, this.content) ||
-                    (this.lexer.includeCode !== undefined &&
-                        isIncludeCode(this.level, this.line, this.content)) ||
-                    (this.lexer.include !== undefined &&
-                        isInclude(this.level, this.line, this.content)) ||
-                    isHtml(this.level, this.line, this.content) ||
-                    isFootnoteRef(this.level, this.line, this.content)
+                const isBlock = isBlockToken(
+                        itemContent,
+                        this.lexer,
+                        this.level,
+                        this.line,
+                        this.content,
+                    )
                 if (
                     (!isBlock &&
                         item.level === this.level &&
@@ -1298,6 +1287,11 @@ export class BlockTokenizer {
                         items: [tokenFound],
                     })
                 }
+            } else if(tokenFound.type === "heading") {
+                if(tokenFound.headingIndex.length > 0) {
+                    this.lexer.tableOfContents.push(tokenFound)
+                }
+                this.blockTokens.push(tokenFound)
             } else {
                 this.blockTokens.push(tokenFound)
             }

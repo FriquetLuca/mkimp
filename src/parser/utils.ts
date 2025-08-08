@@ -1,4 +1,4 @@
-import type { MdBlockToken } from "./blocks"
+import type { HeadingToken, MdBlockToken } from "./blocks"
 import type { MdInlineToken } from "./inlines"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import type { Renderer } from "./renderer"
@@ -19,6 +19,7 @@ export interface RootToken {
     footnoteDefs: Map<string, MdToken[]>
     footnoteIndexRefs: Map<string, number>
     footnoteRefs: Map<number, string>
+    tableOfContents: HeadingToken[]
     tokens: MdToken[]
 }
 
@@ -136,4 +137,31 @@ export function cleanUrl(href: string) {
         return null
     }
     return href
+}
+
+export interface TOCNode {
+  token: HeadingToken;
+  children: TOCNode[];
+}
+
+
+export async function renderTocNodes(this: Renderer, nodes: TOCNode[]): Promise<string> {
+  if (nodes.length === 0) return '';
+
+  const lines: string[] = ['<ul role="list" class="md-tableofcontent">'];
+
+  for (const { token, children } of nodes) {
+    const content = await this.renderer(token.tokens);
+    lines.push(`<li role="listitem" class="md-listitem">`)
+    if(token.id && token.id.length > 0) {
+        lines.push(`<a class="md-link" href="#${token.id}">${token.headingIndex}${content}</a>`);
+    } else {
+        lines.push(`${token.headingIndex}${content}`);
+    }
+    lines.push(await renderTocNodes.call(this, children));
+    lines.push('</li>');
+  }
+
+  lines.push('</ul>');
+  return lines.join('');
 }

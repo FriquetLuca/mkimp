@@ -118,6 +118,12 @@ Enable automatic section numbering:
 #! Section Heading
 ```
 
+#### Table of Contents
+
+```md
+!TableOfContent
+```
+
 #### Code Blocks
 
 ##### Indented code:

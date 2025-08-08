@@ -118,6 +118,12 @@ Activer la numérotation automatique :
 #! Titre avec index
 ```
 
+#### Table des matières
+
+```md
+!TableOfContent
+```
+
 #### Blocs de code
 
 ##### Indenté :
