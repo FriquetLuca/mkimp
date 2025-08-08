@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2025-08-08
 
-- Add `abbr` syntax for abbreviation.
+- Add `abbreviation` syntax for abbreviation.
 
 ## [3.0.1] - 2025-08-08
 
