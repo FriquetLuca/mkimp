@@ -118,3 +118,10 @@ test("abbr rendering", async () => {
         'The <abbr title="Hyper Text Markup Language">HTML</abbr> spec by <abbr title="World Wide Web Consortium">W3C</abbr> is part of the <abbr title="Not My Wallet">N.M.W.</abbr> series.'
     )
 })
+
+test("url should be left as is", async () => {
+    const mkimp = await new MkImp().parse("http://www.example.com")
+    expect(mkimp).toEqual(
+        '<p class=\"md-paragraph\">http://www.example.com</p>'
+    )
+})

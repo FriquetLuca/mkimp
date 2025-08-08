@@ -275,7 +275,6 @@ Le rendu Mermaid est à votre charge.
 | `**gras**` | Gras |
 | `***gras italique***` | Gras + italique |
 | `___italique souligné___` | Souligné + italique |
-| `//commentaire` | Commentaire sur une ligne (termine à la fin de la ligne) |
 | `/*commentaire*/` | Commentaire |
 
 ---

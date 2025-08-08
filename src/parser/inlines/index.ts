@@ -194,18 +194,6 @@ export class InlineTokenizer {
                 case "/":
                     if (
                         this.index + 1 < this.content.length &&
-                        this.content[this.index + 1] === "/"
-                    ) {
-                        this.#cleanBuffer(result)
-                        this.index += 2
-                        while (this.index < this.content.length) {
-                            if (this.content[this.index] === "\n") {
-                                break
-                            }
-                            this.index++
-                        }
-                    } else if (
-                        this.index + 1 < this.content.length &&
                         this.content[this.index + 1] === "*"
                     ) {
                         this.#cleanBuffer(result)
