@@ -280,7 +280,6 @@ Rendering Mermaid is **up to you** — MkImp only passes it through.
 | `**bold**` | Bold |
 | `***bold italic***` | Bold + Italic |
 | `___underline italic___` | Underlined italic |
-| `/*comment*/` | Comment |
 
 ---
 

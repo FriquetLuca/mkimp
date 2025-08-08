@@ -191,37 +191,6 @@ export class InlineTokenizer {
                         type: "newline",
                     })
                     break
-                case "/":
-                    if (
-                        this.index + 1 < this.content.length &&
-                        this.content[this.index + 1] === "*"
-                    ) {
-                        this.#cleanBuffer(result)
-                        this.index += 2
-                        while (this.index < this.content.length) {
-                            if (
-                                this.content[this.index] === "\\" &&
-                                this.index + 1 < this.content.length &&
-                                ESCAPING_CHARS.has(this.content[this.index + 1])
-                            ) {
-                                this.index += 2
-                                continue
-                            }
-                            if (
-                                this.content[this.index] === "*" &&
-                                this.index + 1 < this.content.length &&
-                                this.content[this.index] === "/"
-                            ) {
-                                this.index += 2
-                                break
-                            }
-                            this.index++
-                        }
-                    } else {
-                        this.textBuffer += currentSymbol
-                        this.index++
-                    }
-                    break
                 case "{":
                     if (
                         this.index + 1 < this.content.length &&
