@@ -23,6 +23,7 @@ import {
     isOrderedListItem,
     isRefLink,
     isTable,
+    isTOC,
     isUnderlineHeading,
     isUnorderedListItem,
     openFenceCodeBlockCount,
@@ -182,7 +183,8 @@ function isBlockToken(
             isIncludeCode(level, line, lines)) ||
         (lexer.include !== undefined && isInclude(level, line, lines)) ||
         isHtml(level, line, lines) ||
-        isFootnoteRef(level, line, lines)
+        isFootnoteRef(level, line, lines) ||
+        isTOC(level, line, lines)
     )
 }
 
@@ -663,7 +665,7 @@ export class BlockTokenizer {
                         this.level,
                         this.line,
                         this.content
-                    )
+                    ) || isBlockquote(this.level, this.line, this.content)
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -768,7 +770,7 @@ export class BlockTokenizer {
                         this.level,
                         this.line,
                         this.content
-                    )
+                    ) || isBlockquote(this.level, this.line, this.content)
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -871,7 +873,7 @@ export class BlockTokenizer {
                             this.level,
                             this.line,
                             this.content
-                        )
+                        ) || isBlockquote(this.level, this.line, this.content)
                     ) {
                         break
                     }
@@ -928,7 +930,7 @@ export class BlockTokenizer {
                     this.level,
                     this.line,
                     this.content
-                )
+                ) || isBlockquote(this.level, this.line, this.content)
                 if (
                     (!isBlock &&
                         item.level === this.level &&

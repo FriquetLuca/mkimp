@@ -527,6 +527,15 @@ export function isHtml(level: number, line: number, lines: Line[]) {
     return matchedSeq !== null
 }
 
+export function isTOC(level: number, line: number, lines: Line[]) {
+    const currentLine = lines[line]
+    if (level < currentLine.level) {
+        return undefined
+    }
+
+    return currentLine.content.trimEnd().toLowerCase() === "!tableofcontent"
+}
+
 export function isFootnoteRef(level: number, line: number, lines: Line[]) {
     const item = lines[line]
     if (level < item.level) {
