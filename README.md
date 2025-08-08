@@ -118,6 +118,12 @@ Enable automatic section numbering:
 #! Section Heading
 ```
 
+#### Table of Contents
+
+```md
+!TableOfContent
+```
+
 #### Code Blocks
 
 ##### Indented code:
@@ -268,6 +274,8 @@ Rendering Mermaid is **up to you** — MkImp only passes it through.
 | `**bold**` | Bold |
 | `***bold italic***` | Bold + Italic |
 | `___underline italic___` | Underlined italic |
+| `//comment` | Single line comment (end at the end of the line) |
+| `/*comment*/` | Comment |
 
 ---
 

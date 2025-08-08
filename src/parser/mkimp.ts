@@ -5,7 +5,7 @@ import { Renderer } from "./renderer"
 
 export interface MkImpOptions {
     tabulation?: number
-    metadata?: Map<string, string>
+    metadata?: Map<string, string | number | boolean | BigInt>
     emojis?: Record<string, EmojiRecord>
     frontMatter?: (content: string) => Promise<unknown>
     include?: (
@@ -25,7 +25,7 @@ export interface MkImpOptions {
 
 export class MkImp {
     tabulation: number
-    metadata: Map<string, string>
+    metadata: Map<string, string | number | boolean | BigInt>
     emojis: Record<string, EmojiRecord>
     frontMatter?: (content: string) => Promise<unknown>
     include?: (

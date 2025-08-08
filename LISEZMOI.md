@@ -118,6 +118,12 @@ Activer la numérotation automatique :
 #! Titre avec index
 ```
 
+#### Table des matières
+
+```md
+!TableOfContent
+```
+
 #### Blocs de code
 
 ##### Indenté :
@@ -263,6 +269,8 @@ Le rendu Mermaid est à votre charge.
 | `**gras**` | Gras |
 | `***gras italique***` | Gras + italique |
 | `___italique souligné___` | Souligné + italique |
+| `//commentaire` | Commentaire sur une ligne (termine à la fin de la ligne) |
+| `/*commentaire*/` | Commentaire |
 
 ---
 

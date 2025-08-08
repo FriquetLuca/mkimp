@@ -1,4 +1,4 @@
-import type { MdBlockToken } from "./blocks"
+import type { HeadingToken, MdBlockToken } from "./blocks"
 import type { MdInlineToken } from "./inlines"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import type { Renderer } from "./renderer"
@@ -13,12 +13,13 @@ export type MdToken = MdBlockToken | MdInlineToken
 
 export interface RootToken {
     type: "root"
-    metadata: Map<string, string>
+    metadata: Map<string, string | number | boolean | BigInt>
     reflinks: Map<string, LinkRef>
     emojis: Record<string, EmojiRecord>
     footnoteDefs: Map<string, MdToken[]>
     footnoteIndexRefs: Map<string, number>
     footnoteRefs: Map<number, string>
+    tableOfContents: HeadingToken[]
     tokens: MdToken[]
 }
 
@@ -136,4 +137,33 @@ export function cleanUrl(href: string) {
         return null
     }
     return href
+}
+
+export interface TOCNode {
+    token: HeadingToken
+    children: TOCNode[]
+}
+
+export async function renderTocNodes(
+    this: Renderer,
+    nodes: TOCNode[]
+): Promise<string> {
+    if (nodes.length === 0) return ""
+
+    let result = '<ul role="list" class="md-tableofcontent">'
+
+    for (const { token, children } of nodes) {
+        const content = await this.renderer(token.tokens)
+        result += `<li role="listitem" class="md-listitem">`
+        if (token.id && token.id.length > 0) {
+            result += `<a class="md-link" href="#${token.id}">${token.headingIndex}${content}</a>`
+        } else {
+            result += `${token.headingIndex}${content}`
+        }
+        result += await renderTocNodes.call(this, children)
+        result += "</li>"
+    }
+
+    result += "</ul>"
+    return result
 }

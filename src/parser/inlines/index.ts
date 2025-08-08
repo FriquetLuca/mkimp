@@ -87,6 +87,7 @@ interface CodespanToken {
 interface MetadataToken {
     type: "metadata"
     name: string
+    value: string | number | boolean | BigInt | undefined
 }
 
 interface YoutubeToken {
@@ -190,6 +191,49 @@ export class InlineTokenizer {
                         type: "newline",
                     })
                     break
+                case "/":
+                    if (
+                        this.index + 1 < this.content.length &&
+                        this.content[this.index + 1] === "/"
+                    ) {
+                        this.#cleanBuffer(result)
+                        this.index += 2
+                        while (this.index < this.content.length) {
+                            if (this.content[this.index] === "\n") {
+                                break
+                            }
+                            this.index++
+                        }
+                    } else if (
+                        this.index + 1 < this.content.length &&
+                        this.content[this.index + 1] === "*"
+                    ) {
+                        this.#cleanBuffer(result)
+                        this.index += 2
+                        while (this.index < this.content.length) {
+                            if (
+                                this.content[this.index] === "\\" &&
+                                this.index + 1 < this.content.length &&
+                                ESCAPING_CHARS.has(this.content[this.index + 1])
+                            ) {
+                                this.index += 2
+                                continue
+                            }
+                            if (
+                                this.content[this.index] === "*" &&
+                                this.index + 1 < this.content.length &&
+                                this.content[this.index] === "/"
+                            ) {
+                                this.index += 2
+                                break
+                            }
+                            this.index++
+                        }
+                    } else {
+                        this.textBuffer += currentSymbol
+                        this.index++
+                    }
+                    break
                 case "{":
                     if (
                         this.index + 1 < this.content.length &&
@@ -212,12 +256,14 @@ export class InlineTokenizer {
                         }
                         if (endMeta) {
                             this.#cleanBuffer(result)
+                            const name = this.content.slice(
+                                lastIndex + 1,
+                                this.index
+                            )
                             result.push({
                                 type: "metadata",
-                                name: this.content.slice(
-                                    lastIndex + 1,
-                                    this.index
-                                ),
+                                name,
+                                value: this.lexer.metadata.get(name),
                             })
                             this.index += 2
                         } else {
