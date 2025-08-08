@@ -192,26 +192,26 @@ export class InlineTokenizer {
                     })
                     break
                 case "/":
-                    if(
+                    if (
                         this.index + 1 < this.content.length &&
                         this.content[this.index + 1] === "/"
                     ) {
                         this.#cleanBuffer(result)
                         this.index += 2
-                        while(this.index < this.content.length) {
-                            if(this.content[this.index] === "\n") {
+                        while (this.index < this.content.length) {
+                            if (this.content[this.index] === "\n") {
                                 break
                             }
                             this.index++
                         }
-                    } else if(
+                    } else if (
                         this.index + 1 < this.content.length &&
                         this.content[this.index + 1] === "*"
                     ) {
                         this.#cleanBuffer(result)
                         this.index += 2
-                        while(this.index < this.content.length) {
-                            if(
+                        while (this.index < this.content.length) {
+                            if (
                                 this.content[this.index] === "\\" &&
                                 this.index + 1 < this.content.length &&
                                 ESCAPING_CHARS.has(this.content[this.index + 1])
@@ -219,7 +219,7 @@ export class InlineTokenizer {
                                 this.index += 2
                                 continue
                             }
-                            if(
+                            if (
                                 this.content[this.index] === "*" &&
                                 this.index + 1 < this.content.length &&
                                 this.content[this.index] === "/"
