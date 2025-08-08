@@ -532,8 +532,15 @@ export function isTOC(level: number, line: number, lines: Line[]) {
     if (level < currentLine.level) {
         return undefined
     }
-
     return currentLine.content.trimEnd().toLowerCase() === "!tableofcontent"
+}
+
+export function isAbbr(level: number, line: number, lines: Line[]) {
+    const currentLine = lines[line]
+    if (level < currentLine.level) {
+        return undefined
+    }
+    return /^\*\[(?:[^\]]+)\]:\s+.+/.exec(currentLine.content) !== null
 }
 
 export function isFootnoteRef(level: number, line: number, lines: Line[]) {

@@ -7,8 +7,9 @@ import {
     type RenderTarget,
     type RootToken,
     type TokenRendering,
+    WHITESPACE_CHARS,
 } from "./utils"
-import type { HeadingToken, TexToken } from "./blocks"
+import type { AbbrToken, HeadingToken, TexToken } from "./blocks"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import hljs from "highlight.js"
 import katex from "katex"
@@ -176,7 +177,52 @@ const RENDERER_FNS: TokenRendering = {
         return `<em class="md-italic">${await this.renderer(token.tokens)}</em>`
     },
     async text(token) {
-        return escapeText(token.text)
+        if (!this.abbrs || this.abbrs.length === 0) {
+            return escapeText(token.text)
+        }
+        let result = ""
+        let i = 0
+        while (i < token.text.length) {
+            let found = false
+            while (i < token.text.length) {
+                // Consume whitespaces
+                if (!WHITESPACE_CHARS.has(token.text[i])) {
+                    break
+                }
+                result += token.text[i++]
+            }
+            for (const abbr of this.abbrs) {
+                // Search abbr
+                const sbr = token.text.slice(i, i + abbr.abbr.length)
+                if (
+                    sbr === abbr.abbr &&
+                    (i + abbr.abbr.length === token.text.length ||
+                        (i + abbr.abbr.length < token.text.length &&
+                            WHITESPACE_CHARS.has(
+                                token.text[i + abbr.abbr.length]
+                            )))
+                ) {
+                    // If found, consume it
+                    result += `<abbr title="${escapeText(abbr.title)}">${escapeText(sbr)}</abbr>`
+                    found = true
+                    i += abbr.abbr.length
+                    break
+                }
+            }
+            if (!found) {
+                // if not found
+                let startIndex = i
+                while (i < token.text.length) {
+                    // search next whitespace
+                    if (WHITESPACE_CHARS.has(token.text[i])) {
+                        break
+                    }
+                    i++
+                }
+                result += escapeText(token.text.slice(startIndex, i))
+            }
+        }
+        return result
     },
     async codespan(token) {
         return `<code aria-label="Code" class="md-codespan">${escapeText(token.text, true)}</code>`
@@ -292,6 +338,7 @@ export class Renderer {
     footnoteIndexRefs: Map<string, number>
     footnoteRefs: Map<number, string>
     tableOfContents: HeadingToken[]
+    abbrs: AbbrToken[]
     latex: (token: TexToken) => Promise<string>
     tokens: MdToken[]
     withSection: boolean
@@ -305,6 +352,7 @@ export class Renderer {
         this.tokens = root.tokens
         this.footnoteIndexRefs = root.footnoteIndexRefs
         this.tableOfContents = root.tableOfContents
+        this.abbrs = root.abbrs
         this.withSection = options?.withSection ?? false
         this.renderTarget = options?.renderTarget ?? "raw"
         this.latex = options?.latex ?? defaultLatex

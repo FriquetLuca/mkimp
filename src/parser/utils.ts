@@ -1,4 +1,4 @@
-import type { HeadingToken, MdBlockToken } from "./blocks"
+import type { AbbrToken, HeadingToken, MdBlockToken } from "./blocks"
 import type { MdInlineToken } from "./inlines"
 import type { EmojiRecord, LinkRef } from "./lexer"
 import type { Renderer } from "./renderer"
@@ -20,6 +20,7 @@ export interface RootToken {
     footnoteIndexRefs: Map<string, number>
     footnoteRefs: Map<number, string>
     tableOfContents: HeadingToken[]
+    abbrs: AbbrToken[]
     tokens: MdToken[]
 }
 
