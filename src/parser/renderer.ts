@@ -30,7 +30,7 @@ const RENDERER_FNS: TokenRendering = {
     },
     async definitionListItem(token) {
         let definitions = ""
-        for(const def of token.definitions) {
+        for (const def of token.definitions) {
             definitions += `<dd class="md-defdef">${await this.renderer(def)}</dd>`
         }
         const term = await this.renderer(token.term)
@@ -59,7 +59,8 @@ const RENDERER_FNS: TokenRendering = {
             return `<pre role="region" aria-label="Code block" class="md-precode"><code aria-label="Code" class="md-code${lang}"><table class="md-code-table"><colgroup><col /><col class="md-table-line-space" /><col /></colgroup><tbody>${codeText
                 .split(/\r?\n/)
                 .map(
-                    (c, i) => `<tr class="md-code-row"><td class="md-number-ln">${i + from}</td><td></td><td class="md-code-ln">${c}</td></tr>`
+                    (c, i) =>
+                        `<tr class="md-code-row"><td class="md-number-ln">${i + from}</td><td></td><td class="md-code-ln">${c}</td></tr>`
                 )
                 .join("")}</tbody></table></code></pre>`
         } else {
@@ -92,7 +93,7 @@ const RENDERER_FNS: TokenRendering = {
     async table(token) {
         const header = `<thead class="md-thead" role="rowgroup"><tr class="md-htablerow">${await this.renderer(token.header)}</tr></thead>`
         let body = `<tbody class="md-tbody" role="rowgroup">`
-        for(const cells of token.rows) {
+        for (const cells of token.rows) {
             body += `<tr class="md-tablerow">${await this.renderer(cells)}</tr>`
         }
         body += `</tbody>`
@@ -101,14 +102,16 @@ const RENDERER_FNS: TokenRendering = {
     async cell(token) {
         const tag = token.header ? "th" : "td"
         if (token.header) {
-            const style = token.align !== "default"
-                ? ` style="text-align:${token.align}"`
-                : ""
+            const style =
+                token.align !== "default"
+                    ? ` style="text-align:${token.align}"`
+                    : ""
             return `<${tag} class="md-tablecell" ${style}>${await this.renderer(token.tokens)}</${tag}>`
         } else {
-            const style = token.align !== "default"
-                ? ` style="text-align:${token.align}"`
-                : ""
+            const style =
+                token.align !== "default"
+                    ? ` style="text-align:${token.align}"`
+                    : ""
             return `<${tag} class="md-tablecell" ${style}>${await this.renderer(token.tokens)}</${tag}>`
         }
     },
@@ -194,7 +197,9 @@ const RENDERER_FNS: TokenRendering = {
     },
     async metadata(token) {
         if (token.value) {
-            return typeof token.value === "string" ? escapeText(token.value) : escapeText(token.value.toString())
+            return typeof token.value === "string"
+                ? escapeText(token.value)
+                : escapeText(token.value.toString())
         }
         return ""
     },
@@ -238,27 +243,30 @@ const RENDERER_FNS: TokenRendering = {
         return `<img src="${imgcleanHref}" alt="${alt}" class="md-image"${title}>`
     },
     async tableOfContent(_) {
-        const root: TOCNode[] = [];
-        const stack: { depth: number; node: TOCNode }[] = [];
+        const root: TOCNode[] = []
+        const stack: { depth: number; node: TOCNode }[] = []
 
         for (const token of this.tableOfContents) {
-            const node: TOCNode = { token, children: [] };
+            const node: TOCNode = { token, children: [] }
 
-            while (stack.length > 0 && stack[stack.length - 1].depth >= token.depth) {
-                stack.pop();
+            while (
+                stack.length > 0 &&
+                stack[stack.length - 1].depth >= token.depth
+            ) {
+                stack.pop()
             }
 
             if (stack.length === 0) {
-                root.push(node);
+                root.push(node)
             } else {
-                stack[stack.length - 1].node.children.push(node);
+                stack[stack.length - 1].node.children.push(node)
             }
 
-            stack.push({ depth: token.depth, node });
+            stack.push({ depth: token.depth, node })
         }
 
-        return await renderTocNodes.call(this, root);
-    }
+        return await renderTocNodes.call(this, root)
+    },
 }
 
 const defaultLatex = async (token: TexToken) => {
@@ -277,7 +285,7 @@ export interface RendererOptions {
 }
 
 export class Renderer {
-    metadata: Map<string, string|number|boolean|BigInt>
+    metadata: Map<string, string | number | boolean | BigInt>
     emojis: Record<string, EmojiRecord>
     reflinks: Map<string, LinkRef>
     footnoteDefs: Map<string, MdToken[]>
@@ -314,8 +322,11 @@ export class Renderer {
         if (!this.withSection) {
             // Simple rendering without sections
             let result = ""
-            for(const token of tokens) {
-                result += await RENDERER_FNS[token.type].call(this, token as any)
+            for (const token of tokens) {
+                result += await RENDERER_FNS[token.type].call(
+                    this,
+                    token as any
+                )
             }
             return result
         }
@@ -338,14 +349,12 @@ export class Renderer {
         }
 
         let result = ""
-        for(const sectionTokens of sections) {
-            const headingToken = sectionTokens.find(
-                (t) => t.type === "heading"
-            )
+        for (const sectionTokens of sections) {
+            const headingToken = sectionTokens.find((t) => t.type === "heading")
             const headingId = headingToken ? headingToken.id : undefined
 
             let inner = ""
-            for(const token of sectionTokens) {
+            for (const token of sectionTokens) {
                 inner += await RENDERER_FNS[token.type].call(this, token as any)
             }
 

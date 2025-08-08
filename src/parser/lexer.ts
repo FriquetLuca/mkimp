@@ -21,7 +21,7 @@ export interface LinkRef {
 
 interface LexerOptions {
     tabulation?: number
-    metadata?: Map<string, string|number|boolean|BigInt>
+    metadata?: Map<string, string | number | boolean | BigInt>
     emojis?: Record<string, EmojiRecord>
     frontMatter?: (content: string) => Promise<unknown>
     include?: (
@@ -53,7 +53,7 @@ export class Lexer {
     ]
     headingShift: number
     started: boolean
-    metadata: Map<string, string|number|boolean|BigInt>
+    metadata: Map<string, string | number | boolean | BigInt>
     emojis: Record<string, EmojiRecord>
     tabulation: number
     frontMatter?: (content: string) => Promise<unknown>

@@ -13,7 +13,7 @@ export type MdToken = MdBlockToken | MdInlineToken
 
 export interface RootToken {
     type: "root"
-    metadata: Map<string, string|number|boolean|BigInt>
+    metadata: Map<string, string | number | boolean | BigInt>
     reflinks: Map<string, LinkRef>
     emojis: Record<string, EmojiRecord>
     footnoteDefs: Map<string, MdToken[]>
@@ -140,28 +140,30 @@ export function cleanUrl(href: string) {
 }
 
 export interface TOCNode {
-  token: HeadingToken;
-  children: TOCNode[];
+    token: HeadingToken
+    children: TOCNode[]
 }
 
+export async function renderTocNodes(
+    this: Renderer,
+    nodes: TOCNode[]
+): Promise<string> {
+    if (nodes.length === 0) return ""
 
-export async function renderTocNodes(this: Renderer, nodes: TOCNode[]): Promise<string> {
-  if (nodes.length === 0) return '';
+    let result = '<ul role="list" class="md-tableofcontent">'
 
-  const lines: string[] = ['<ul role="list" class="md-tableofcontent">'];
-
-  for (const { token, children } of nodes) {
-    const content = await this.renderer(token.tokens);
-    lines.push(`<li role="listitem" class="md-listitem">`)
-    if(token.id && token.id.length > 0) {
-        lines.push(`<a class="md-link" href="#${token.id}">${token.headingIndex}${content}</a>`);
-    } else {
-        lines.push(`${token.headingIndex}${content}`);
+    for (const { token, children } of nodes) {
+        const content = await this.renderer(token.tokens)
+        result += `<li role="listitem" class="md-listitem">`
+        if (token.id && token.id.length > 0) {
+            result += `<a class="md-link" href="#${token.id}">${token.headingIndex}${content}</a>`
+        } else {
+            result += `${token.headingIndex}${content}`
+        }
+        result += await renderTocNodes.call(this, children)
+        result += "</li>"
     }
-    lines.push(await renderTocNodes.call(this, children));
-    lines.push('</li>');
-  }
 
-  lines.push('</ul>');
-  return lines.join('');
+    result += "</ul>"
+    return result
 }

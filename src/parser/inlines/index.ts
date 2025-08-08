@@ -220,7 +220,7 @@ export class InlineTokenizer {
                             result.push({
                                 type: "metadata",
                                 name,
-                                value: this.lexer.metadata.get(name)
+                                value: this.lexer.metadata.get(name),
                             })
                             this.index += 2
                         } else {

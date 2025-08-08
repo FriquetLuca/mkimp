@@ -16,11 +16,15 @@ export const DIGIT_CHARS = new Set([
 
 export function flattenJSONintoMap(
     obj: any,
-    map: Map<string, string|number|boolean|BigInt>,
+    map: Map<string, string | number | boolean | BigInt>,
     prefix = ""
 ) {
     if (typeof obj !== "object" || obj === null) {
-        const isCorrectType = typeof obj === "bigint" || typeof obj === "boolean" || typeof obj === "number" || typeof obj === "string"
+        const isCorrectType =
+            typeof obj === "bigint" ||
+            typeof obj === "boolean" ||
+            typeof obj === "number" ||
+            typeof obj === "string"
         map.set(prefix, isCorrectType ? obj : String(obj))
         return
     }

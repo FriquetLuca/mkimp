@@ -163,8 +163,15 @@ export interface BlockTokenizerOptions {
 
 const dashMatch = /^-{3,}$/
 
-function isBlockToken(currentContent: string, lexer: Lexer, level: number, line: number, lines: Line[]) {
-    return isOrderedListItem(currentContent) ||
+function isBlockToken(
+    currentContent: string,
+    lexer: Lexer,
+    level: number,
+    line: number,
+    lines: Line[]
+) {
+    return (
+        isOrderedListItem(currentContent) ||
         isUnorderedListItem(currentContent) ||
         isFenceCodeBlock(level, line, lines) ||
         isHashHeading(level, line, lines) ||
@@ -173,10 +180,10 @@ function isBlockToken(currentContent: string, lexer: Lexer, level: number, line:
         isRefLink(level, line, lines) ||
         (lexer.includeCode !== undefined &&
             isIncludeCode(level, line, lines)) ||
-        (lexer.include !== undefined &&
-            isInclude(level, line, lines)) ||
+        (lexer.include !== undefined && isInclude(level, line, lines)) ||
         isHtml(level, line, lines) ||
         isFootnoteRef(level, line, lines)
+    )
 }
 
 export class BlockTokenizer {
@@ -551,7 +558,7 @@ export class BlockTokenizer {
         if (firstLine.content.trimEnd().toLowerCase() === "!tableofcontent") {
             this.line++
             return {
-                type: "tableOfContent"
+                type: "tableOfContent",
             }
         }
         return undefined
@@ -581,7 +588,7 @@ export class BlockTokenizer {
                     this.lexer,
                     this.level,
                     this.line,
-                    this.content,
+                    this.content
                 )
             ) {
                 // Skip blocks
@@ -651,12 +658,12 @@ export class BlockTokenizer {
                         continue
                     }
                     const isBlock = isBlockToken(
-                            itemContent,
-                            this.lexer,
-                            this.level,
-                            this.line,
-                            this.content,
-                        )
+                        itemContent,
+                        this.lexer,
+                        this.level,
+                        this.line,
+                        this.content
+                    )
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -756,12 +763,12 @@ export class BlockTokenizer {
                         continue
                     }
                     const isBlock = isBlockToken(
-                            itemContent,
-                            this.lexer,
-                            this.level,
-                            this.line,
-                            this.content,
-                        )
+                        itemContent,
+                        this.lexer,
+                        this.level,
+                        this.line,
+                        this.content
+                    )
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -863,7 +870,7 @@ export class BlockTokenizer {
                             this.lexer,
                             this.level,
                             this.line,
-                            this.content,
+                            this.content
                         )
                     ) {
                         break
@@ -916,12 +923,12 @@ export class BlockTokenizer {
                     continue
                 }
                 const isBlock = isBlockToken(
-                        itemContent,
-                        this.lexer,
-                        this.level,
-                        this.line,
-                        this.content,
-                    )
+                    itemContent,
+                    this.lexer,
+                    this.level,
+                    this.line,
+                    this.content
+                )
                 if (
                     (!isBlock &&
                         item.level === this.level &&
@@ -1004,7 +1011,7 @@ export class BlockTokenizer {
             const content = await this.lexer.include(includeLocation, from, to)
             const currentMetadata = this.lexer.metadata
             this.lexer.metadata = new Map()
-            for(const [key, data] of currentMetadata) {
+            for (const [key, data] of currentMetadata) {
                 this.lexer.metadata.set(key, data)
             }
             const tokens = content ? await this.lexer.lex(content) : []
@@ -1287,8 +1294,8 @@ export class BlockTokenizer {
                         items: [tokenFound],
                     })
                 }
-            } else if(tokenFound.type === "heading") {
-                if(tokenFound.headingIndex.length > 0) {
+            } else if (tokenFound.type === "heading") {
+                if (tokenFound.headingIndex.length > 0) {
                     this.lexer.tableOfContents.push(tokenFound)
                 }
                 this.blockTokens.push(tokenFound)
