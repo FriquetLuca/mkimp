@@ -623,6 +623,7 @@ export class InlineTokenizer {
                             this.#cleanBuffer(result)
                             result.push({
                                 type: "spoiler",
+                                index: -1,
                                 title: [],
                                 inline: true,
                                 tokens,
@@ -689,6 +690,7 @@ export class InlineTokenizer {
                             if (currentSymbol === "|") {
                                 result.push({
                                     type: "spoiler",
+                                    index: -1,
                                     title: [],
                                     inline: true,
                                     tokens,

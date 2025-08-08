@@ -116,6 +116,7 @@ export interface TexToken {
 
 interface SpoilerToken {
     type: "spoiler"
+    index: number
     title: MdToken[]
     inline: boolean
     tokens: MdToken[]
@@ -508,6 +509,7 @@ export class BlockTokenizer {
             this.line++
             return {
                 type: "spoiler",
+                index: this.lexer.spoilerCount++,
                 title: this.lexer.inlineLex(title),
                 inline: false,
                 tokens: tokens.getBlocks(),

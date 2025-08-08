@@ -145,7 +145,7 @@ const RENDERER_FNS: TokenRendering = {
         if (token.inline) {
             return `<label class="md-spoiler"><input class="md-spoiltrigger" type="checkbox" hidden><span class="md-spoilertext">${spoilerContent}</span></label>`
         }
-        return `<div class="md-spoiler-toggle"><input type="checkbox" id="md-spoiler-label" hidden><label for="md-spoiler-label" class="md-spoiler-header">${await this.renderer(token.title)}</label><div class="md-spoiler-content">${spoilerContent}</div></div>`
+        return `<div class="md-spoiler-toggle"><input type="checkbox" id="md-spoiler-label-${token.index}" hidden><label for="md-spoiler-label-${token.index}" class="md-spoiler-header">${await this.renderer(token.title)}</label><div class="md-spoiler-content">${spoilerContent}</div></div>`
     },
     async include(token) {
         return await this.renderer(token.tokens)

@@ -37,6 +37,7 @@ interface LexerOptions {
     includedLocations?: Set<string>
     tableOfContents?: HeadingToken[]
     abbrs?: AbbrToken[]
+    spoilerCount?: number
 }
 
 interface StaticLexerOptions {
@@ -76,6 +77,7 @@ export class Lexer {
     footnoteDefs: Map<string, MdToken[]>
     tableOfContents: HeadingToken[]
     slugger: Slugger
+    spoilerCount: number
     constructor(options: Partial<LexerOptions> = {}) {
         this.headingIndex = [0, 0, 0, 0, 0, 0]
         this.tabulation = options?.tabulation ?? 4
@@ -94,6 +96,7 @@ export class Lexer {
         this.slugger = new Slugger()
         this.tableOfContents = options?.tableOfContents ?? []
         this.abbrs = options?.abbrs ?? []
+        this.spoilerCount = options?.spoilerCount ?? 0
     }
     newHeading(depth: number) {
         switch (depth) {
@@ -163,6 +166,7 @@ export class Lexer {
                 includedLocations: options?.includedLocations,
                 tableOfContents: options?.tableOfContents,
                 abbrs: options?.abbrs,
+                spoilerCount: options?.spoilerCount,
             })
         const _blocks = await new BlockTokenizer({
             lexer,
@@ -203,6 +207,7 @@ export class Lexer {
                 includedLocations: options?.includedLocations,
                 tableOfContents: options?.tableOfContents,
                 abbrs: options?.abbrs,
+                spoilerCount: options?.spoilerCount,
             })
         const inline = new InlineTokenizer({
             lexer,
