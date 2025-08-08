@@ -125,3 +125,12 @@ test("url should be left as is", async () => {
         '<p class=\"md-paragraph\">http://www.example.com</p>'
     )
 })
+
+test("abbr parsing should be rendered", async () => {
+    const mkimp = await new MkImp().parse(
+        "NASA and CERN do science.\n\n*[NASA]: National Aeronautics and Space Administration\n*[CERN]: Centre Européen de Recherche Nucléaire"
+    )
+    expect(mkimp).toEqual(
+        '<p class="md-paragraph"><abbr title="National Aeronautics and Space Administration">NASA</abbr> and <abbr title="Centre Européen de Recherche Nucléaire">CERN</abbr> do science.</p>'
+    )
+})

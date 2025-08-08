@@ -326,6 +326,9 @@ export class BlockTokenizer {
             if (this.reflink()) {
                 continue
             }
+            if (this.abbr()) {
+                continue
+            }
             const token = await this.getBlock()
             if (token) {
                 this.addToken(token)
