@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Correct the renderer for async.
 - Correct the renderer test that was missing `await`.
 - Add table of content block.
+- Add inline commentary syntax (C like).
 
 ## [2.0.0] - 2025-08-05
 

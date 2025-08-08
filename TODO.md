@@ -1,9 +1,4 @@
 Planned:
-1. Comments
-    // Line Comment
-    /* Inline Comment Block */
-1. Table of content
-2. Index table
 3. Colors
     {color:red}This text is red.{/color}
 5. Abbreviations
@@ -25,6 +20,7 @@ Planned:
 
 Maybe:
 
+2. Index table
 1. remove html comment
 2. sup (^...^) sub (~...~)
 3. Embedded PDFs or Documents
