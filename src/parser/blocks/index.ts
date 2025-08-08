@@ -1078,7 +1078,7 @@ export class BlockTokenizer {
                 currentItem.content
             )
         if (match) {
-            const [raw, includePath, lang, fromStr, toStr] = match
+            const [_, includePath, includePath2, lang, fromStr, toStr] = match
             let from: number | undefined, to: number | undefined
             try {
                 from = fromStr ? Math.max(parseInt(fromStr, 10), 1) : undefined
@@ -1086,15 +1086,18 @@ export class BlockTokenizer {
             try {
                 to = toStr ? Math.max(parseInt(toStr, 10), 1) : undefined
             } catch (_) {}
-            const content =
-                (await this.lexer.includeCode(includePath, from, to)) ?? raw
+            const content = await this.lexer.includeCode(
+                includePath ?? includePath2 ?? "",
+                from,
+                to
+            )
             this.line++
             return {
                 type: "codeblock",
                 from,
                 to,
                 lang,
-                content: content ?? undefined,
+                content: content ?? "",
             }
         }
         return undefined

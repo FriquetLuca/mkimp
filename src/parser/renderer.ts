@@ -82,7 +82,8 @@ const RENDERER_FNS: TokenRendering = {
     },
     async list(token) {
         const type = token.ordered ? "ol" : "ul"
-        return `<${type} role="list" class="md-${type}list">${await this.renderer(token.items)}</${type}>`
+        const startAt = token.startAt ? ` start="${token.startAt}"` : ""
+        return `<${type} role="list" class="md-${type}list"${startAt}>${await this.renderer(token.items)}</${type}>`
     },
     async listItem(token) {
         const head = token.task
