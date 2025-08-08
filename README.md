@@ -124,6 +124,12 @@ Enable automatic section numbering:
 !TableOfContent
 ```
 
+#### Abbreviation
+
+```md
+*[HTML]: Hyper Text Markup Language
+```
+
 #### Code Blocks
 
 ##### Indented code:

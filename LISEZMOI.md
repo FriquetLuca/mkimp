@@ -124,6 +124,12 @@ Activer la numérotation automatique :
 !TableOfContent
 ```
 
+#### Abréviation
+
+```md
+*[HTML]: Hyper Text Markup Language
+```
+
 #### Blocs de code
 
 ##### Indenté :
