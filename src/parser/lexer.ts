@@ -1,4 +1,4 @@
-import { BlockTokenizer, type HeadingToken } from "./blocks"
+import { type AbbrToken, BlockTokenizer, type HeadingToken } from "./blocks"
 import { InlineTokenizer } from "./inlines"
 import { Slugger } from "./slugger"
 import { type MdToken, type RootToken, stringToLines } from "./utils"
@@ -36,6 +36,7 @@ interface LexerOptions {
     ) => Promise<string | undefined>
     includedLocations?: Set<string>
     tableOfContents?: HeadingToken[]
+    abbrs?: AbbrToken[]
 }
 
 interface StaticLexerOptions {
@@ -69,6 +70,7 @@ export class Lexer {
     ) => Promise<string | undefined>
     includedLocations: Set<string>
     reflinks: Map<string, LinkRef>
+    abbrs: AbbrToken[]
     footnoteIndexMap: Map<string, number>
     footnoteRef: Map<number, string>
     footnoteDefs: Map<string, MdToken[]>
@@ -91,6 +93,7 @@ export class Lexer {
         this.emojis = options?.emojis ?? {}
         this.slugger = new Slugger()
         this.tableOfContents = options?.tableOfContents ?? []
+        this.abbrs = options?.abbrs ?? []
     }
     newHeading(depth: number) {
         switch (depth) {
@@ -159,6 +162,7 @@ export class Lexer {
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
                 tableOfContents: options?.tableOfContents,
+                abbrs: options?.abbrs,
             })
         const _blocks = await new BlockTokenizer({
             lexer,
@@ -179,6 +183,7 @@ export class Lexer {
             footnoteRefs: lexer.footnoteRef,
             footnoteIndexRefs: lexer.footnoteIndexMap,
             tableOfContents: lexer.tableOfContents,
+            abbrs: lexer.abbrs.sort((a, b) => b.abbr.length - a.abbr.length),
             emojis: lexer.emojis,
             tokens,
         }
@@ -197,6 +202,7 @@ export class Lexer {
                 includeCode: options?.includeCode,
                 includedLocations: options?.includedLocations,
                 tableOfContents: options?.tableOfContents,
+                abbrs: options?.abbrs,
             })
         const inline = new InlineTokenizer({
             lexer,

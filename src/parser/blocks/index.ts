@@ -10,6 +10,7 @@ import {
     extractUnorderedListItem,
     findOrderedListStartAt,
     flattenJSONintoMap,
+    isAbbr,
     isBlockquote,
     isDefinitionList,
     isFenceCodeBlock,
@@ -138,6 +139,12 @@ interface TableOfContentToken {
     type: "tableOfContent"
 }
 
+export interface AbbrToken {
+    type: "abbr"
+    abbr: string
+    title: string
+}
+
 export type MdBlockToken =
     | HeadingToken
     | CodeBlockToken
@@ -184,7 +191,8 @@ function isBlockToken(
         (lexer.include !== undefined && isInclude(level, line, lines)) ||
         isHtml(level, line, lines) ||
         isFootnoteRef(level, line, lines) ||
-        isTOC(level, line, lines)
+        isTOC(level, line, lines) ||
+        isAbbr(level, line, lines)
     )
 }
 
@@ -329,6 +337,30 @@ export class BlockTokenizer {
     }
     getBlocks() {
         return this.blockTokens
+    }
+    abbr(): boolean {
+        //reflink(): boolean
+        const currentToken = this.content[this.line]
+        if (this.level < currentToken.level) {
+            return false
+        }
+        const match = /^\*\[([^\]\n]+?)\]:\s+(.+)$/.exec(currentToken.content)
+        if (match) {
+            const [_, abbrRaw, titleRaw] = match
+            const abbr = abbrRaw.trim()
+            const title = titleRaw.trim()
+            const hasAbbr = this.lexer.abbrs.find((f) => f.abbr === abbr)
+            if (hasAbbr === undefined) {
+                this.lexer.abbrs.push({
+                    type: "abbr",
+                    abbr,
+                    title,
+                })
+            }
+            this.line++
+            return true
+        }
+        return false
     }
     hashHeading(): HeadingToken | undefined {
         if (this.level < this.content[this.line].level) {
@@ -659,13 +691,14 @@ export class BlockTokenizer {
                         this.line++
                         continue
                     }
-                    const isBlock = isBlockToken(
-                        itemContent,
-                        this.lexer,
-                        this.level,
-                        this.line,
-                        this.content
-                    ) || isBlockquote(this.level, this.line, this.content)
+                    const isBlock =
+                        isBlockToken(
+                            itemContent,
+                            this.lexer,
+                            this.level,
+                            this.line,
+                            this.content
+                        ) || isBlockquote(this.level, this.line, this.content)
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -764,13 +797,14 @@ export class BlockTokenizer {
                         this.line++
                         continue
                     }
-                    const isBlock = isBlockToken(
-                        itemContent,
-                        this.lexer,
-                        this.level,
-                        this.line,
-                        this.content
-                    ) || isBlockquote(this.level, this.line, this.content)
+                    const isBlock =
+                        isBlockToken(
+                            itemContent,
+                            this.lexer,
+                            this.level,
+                            this.line,
+                            this.content
+                        ) || isBlockquote(this.level, this.line, this.content)
                     if (
                         (!isBlock &&
                             item.level === this.level &&
@@ -873,7 +907,8 @@ export class BlockTokenizer {
                             this.level,
                             this.line,
                             this.content
-                        ) || isBlockquote(this.level, this.line, this.content)
+                        ) ||
+                        isBlockquote(this.level, this.line, this.content)
                     ) {
                         break
                     }
@@ -924,13 +959,14 @@ export class BlockTokenizer {
                     this.line++
                     continue
                 }
-                const isBlock = isBlockToken(
-                    itemContent,
-                    this.lexer,
-                    this.level,
-                    this.line,
-                    this.content
-                ) || isBlockquote(this.level, this.line, this.content)
+                const isBlock =
+                    isBlockToken(
+                        itemContent,
+                        this.lexer,
+                        this.level,
+                        this.line,
+                        this.content
+                    ) || isBlockquote(this.level, this.line, this.content)
                 if (
                     (!isBlock &&
                         item.level === this.level &&

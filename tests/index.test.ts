@@ -83,9 +83,38 @@ test("heading table of content renderer", async () => {
                 headingIndex: "1.",
             },
         ],
+        abbrs: [],
         tokens: [{ type: "tableOfContent" }],
     })
     expect(result).toBe(
         '<ul role="list" class="md-tableofcontent"><li role="listitem" class="md-listitem"><a class="md-link" href="#intro">1.abcde1</a><ul role="list" class="md-tableofcontent"><li role="listitem" class="md-listitem"><a class="md-link" href="#usage">1.2.abcde2</a><ul role="list" class="md-tableofcontent"><li role="listitem" class="md-listitem"><a class="md-link" href="#forgotten">1.2.0.4.abcde3</a></li></ul></li></ul></li><li role="listitem" class="md-listitem"><a class="md-link" href="#install">1.abcde4</a></li></ul>'
+    )
+})
+
+test("abbr rendering", async () => {
+    const mkimp = new MkImp()
+    const result = await mkimp.render({
+        type: "root",
+        metadata: new Map(),
+        reflinks: new Map(),
+        emojis: {},
+        footnoteDefs: new Map(),
+        footnoteIndexRefs: new Map(),
+        footnoteRefs: new Map(),
+        tableOfContents: [],
+        abbrs: [
+            { type: "abbr", abbr: "HTML", title: "Hyper Text Markup Language" },
+            { type: "abbr", abbr: "W3C", title: "World Wide Web Consortium" },
+            { type: "abbr", abbr: "N.M.W.", title: "Not My Wallet" },
+        ],
+        tokens: [
+            {
+                type: "text",
+                text: "The HTML spec by W3C is part of the N.M.W. series.",
+            },
+        ],
+    })
+    expect(result).toBe(
+        'The <abbr title="Hyper Text Markup Language">HTML</abbr> spec by <abbr title="World Wide Web Consortium">W3C</abbr> is part of the <abbr title="Not My Wallet">N.M.W.</abbr> series.'
     )
 })
