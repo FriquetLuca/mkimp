@@ -1,6 +1,6 @@
 {
     "name": "mkimp",
-    "version": "4.0.7",
+    "version": "4.0.8",
     "description": "Write markdown like a programmer should be able to",
     "license": "MIT",
     "author": "FriquetLuca",
@@ -25,8 +25,11 @@
     "module": "./dist/index.esm.js",
     "types": "./dist/index.d.ts",
     "exports": {
-        "import": "./dist/index.esm.js",
-        "require": "./dist/index.cjs.js"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.esm.js",
+            "require": "./dist/index.cjs.js"
+        }
     },
     "scripts": {
         "build": "(rm -rf dist) && node build.mjs && tsc --emitDeclarationOnly",
