@@ -189,6 +189,12 @@ const RENDERER_FNS: TokenRendering<string> = {
   async newline() {
     return '<br/>';
   },
+  async sub(token) {
+    return `<sub class="md-sub">${await this.renderer(token.tokens)}</sub>`;
+  },
+  async sup(token) {
+    return `<sup class="md-sup">${await this.renderer(token.tokens)}</sup>`;
+  },
   async highlight(token) {
     return `<mark class="md-highlight">${await this.renderer(token.tokens)}</mark>`;
   },

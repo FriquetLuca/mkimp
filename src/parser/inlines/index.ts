@@ -96,6 +96,16 @@ export interface YoutubeToken {
   attributes: Record<string, string>;
 }
 
+export interface SupToken {
+  type: 'sup';
+  tokens: MdToken[];
+}
+
+export interface SubToken {
+  type: 'sub';
+  tokens: MdToken[];
+}
+
 export type MdInlineToken =
   | TextToken
   | YoutubeToken
@@ -112,7 +122,9 @@ export type MdInlineToken =
   | EmojiToken
   | UnderlineToken
   | BoldToken
-  | ItalicToken;
+  | ItalicToken
+  | SupToken
+  | SubToken;
 
 export interface InlineTokenizerOptions {
   parent?: InlineTokenizer;
@@ -582,9 +594,7 @@ export class InlineTokenizer {
           break;
         }
         case '=':
-        case '~':
-        case '|':
-        case '^': {
+        case '|': {
           const startDualIndex = this.index + 1;
           if (this.#symbolCounter(currentSymbol, 2) === 2) {
             const buffer = this.#extractBuffer();
@@ -608,14 +618,8 @@ export class InlineTokenizer {
                   tokens,
                 });
               } else {
-                const type =
-                  currentSymbol === '~'
-                    ? 'strikethrough'
-                    : currentSymbol === '='
-                      ? 'highlight'
-                      : 'overline';
                 result.push({
-                  type,
+                  type: 'highlight',
                   tokens,
                 });
               }
@@ -627,6 +631,150 @@ export class InlineTokenizer {
           } else {
             this.textBuffer += currentSymbol;
             this.index = startDualIndex;
+          }
+          break;
+        }
+        case '~':
+        case '^': {
+          const startStarIndex = this.index + 1;
+          const buffer = this.#extractBuffer();
+          let count = this.#symbolCounter(currentSymbol, 3);
+          if (count === 3) {
+            const tokens = this.tokenize((i, src) => src[i] === currentSymbol);
+            while (count > 0 && this.index < this.content.length) {
+              if (this.content[this.index] !== currentSymbol) {
+                break;
+              }
+              count--;
+              this.index++;
+            }
+            if (count === 0) {
+              this.textBuffer = buffer;
+              this.#cleanBuffer(result);
+              result.push({
+                type: currentSymbol === '^' ? 'sup' : 'sub',
+                tokens: [
+                  {
+                    type: currentSymbol === '^' ? 'overline' : 'strikethrough',
+                    tokens,
+                  },
+                ],
+              });
+            } else if (count < 3) {
+              if (count === 2) {
+                const endingFn =
+                  currentSymbol === '^' ? 'overline' : 'strikethrough';
+                const lastTokens = this.tokenize(
+                  ENDING_STARS.get(INLINE_KIND_CHARS.get(endingFn)!)!(
+                    currentSymbol
+                  )
+                );
+                if (
+                  this.index < this.content.length &&
+                  this.content[this.index] === currentSymbol &&
+                  this.index + 1 < this.content.length &&
+                  this.content[this.index + 1] === currentSymbol
+                ) {
+                  this.textBuffer = buffer;
+                  this.#cleanBuffer(result);
+                  result.push({
+                    type: endingFn,
+                    tokens: [
+                      {
+                        type: currentSymbol === '^' ? 'sup' : 'sub',
+                        tokens,
+                      },
+                      ...lastTokens,
+                    ],
+                  });
+                  this.index += count;
+                } else {
+                  this.textBuffer = `${buffer}${currentSymbol}`;
+                  this.index = startStarIndex;
+                }
+              } else {
+                const endingFn = currentSymbol === '^' ? 'sup' : 'sub';
+                const lastTokens = this.tokenize(
+                  ENDING_STARS.get(INLINE_KIND_CHARS.get(endingFn)!)!(
+                    currentSymbol
+                  )
+                );
+                if (
+                  this.index < this.content.length &&
+                  this.content[this.index] === currentSymbol
+                ) {
+                  this.textBuffer = buffer;
+                  this.#cleanBuffer(result);
+                  result.push({
+                    type: endingFn,
+                    tokens: [
+                      {
+                        type:
+                          currentSymbol === '^' ? 'overline' : 'strikethrough',
+                        tokens,
+                      },
+                      ...lastTokens,
+                    ],
+                  });
+                  this.index += count;
+                } else {
+                  this.textBuffer = `${buffer}${currentSymbol}`;
+                  this.index = startStarIndex;
+                }
+              }
+            } else {
+              this.textBuffer = `${buffer}${currentSymbol}`;
+              this.index = startStarIndex;
+            }
+          } else {
+            if (count === 2) {
+              const endingFn =
+                currentSymbol === '^' ? 'overline' : 'strikethrough';
+              const tokens = this.tokenize(
+                ENDING_STARS.get(INLINE_KIND_CHARS.get(endingFn)!)!(
+                  currentSymbol
+                )
+              );
+              if (
+                this.index < this.content.length &&
+                this.content[this.index] === currentSymbol &&
+                this.index + 1 < this.content.length &&
+                this.content[this.index + 1] === currentSymbol
+              ) {
+                this.textBuffer = buffer;
+                this.#cleanBuffer(result);
+                result.push({
+                  type: endingFn,
+                  tokens,
+                });
+                this.index += count;
+              } else {
+                this.textBuffer = `${buffer}${currentSymbol}`;
+                this.index = startStarIndex;
+              }
+            } else {
+              const endingFn = currentSymbol === '^' ? 'sup' : 'sub';
+              const tokens = this.tokenize(
+                ENDING_STARS.get(INLINE_KIND_CHARS.get(endingFn)!)!(
+                  currentSymbol
+                )
+              );
+              if (
+                this.index < this.content.length &&
+                this.content[this.index] === currentSymbol
+              ) {
+                this.textBuffer = buffer;
+                this.#cleanBuffer(result);
+                result.push({
+                  type: endingFn,
+                  tokens,
+                });
+                this.index += count;
+              } else {
+                this.textBuffer = `${buffer}${currentSymbol}`;
+                this.index = startStarIndex;
+              }
+            }
           }
           break;
         }

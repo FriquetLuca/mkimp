@@ -20,7 +20,11 @@ export const ENDING_STARS = new Map<
 export const INLINE_KIND_CHARS = new Map<string, 'double' | 'single'>([
   ['bold', 'double'],
   ['underline', 'double'],
+  ['overline', 'double'],
+  ['strikethrough', 'double'],
   ['italic', 'single'],
+  ['sup', 'single'],
+  ['sub', 'single'],
 ]);
 
 export const ESCAPING_CHARS = new Set([

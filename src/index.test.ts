@@ -154,3 +154,83 @@ test('abbr parsing should be rendered', async () => {
     '<p class="md-paragraph"><abbr title="National Aeronautics and Space Administration">NASA</abbr> and <abbr title="Centre Européen de Recherche Nucléaire">CERN</abbr> do science.</p>'
   );
 });
+
+test('sub should be found', async () => {
+  const content = '~This is sub.~';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><sub class="md-sub">This is sub.</sub></p>'
+  );
+});
+
+test('sup should be found', async () => {
+  const content = '^This is sup.^';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><sup class="md-sup">This is sup.</sup></p>'
+  );
+});
+
+test('overline should be found', async () => {
+  const content = '^^This is sub.^^';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><u class="md-overline">This is sub.</u></p>'
+  );
+});
+
+test('strikethrough should be found', async () => {
+  const content = '~~This is sup.~~';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><del class="md-strikethrough">This is sup.</del></p>'
+  );
+});
+
+test('sup and overline overlapping should be detected 1', async () => {
+  const content = '^^^This is^^ sup.^';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><sup class="md-sup"><u class="md-overline">This is</u> sup.</sup></p>'
+  );
+});
+
+test('sup and overline overlapping should be detected 2', async () => {
+  const content = '^^^This is^ sup.^^';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><u class="md-overline"><sup class="md-sup">This is</sup> sup.</u></p>'
+  );
+});
+
+test('sup and overline overlapping should be detected 3', async () => {
+  const content = '^^^This is sup.^^^';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><sup class="md-sup"><u class="md-overline">This is sup.</u></sup></p>'
+  );
+});
+
+test('sub and strikethrough overlapping should be detected 1', async () => {
+  const content = '~~~This is~~ sup.~';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><sub class="md-sub"><del class="md-strikethrough">This is</del> sup.</sub></p>'
+  );
+});
+
+test('sub and strikethrough overlapping should be detected 2', async () => {
+  const content = '~~~This is~ sup.~~';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><del class="md-strikethrough"><sub class="md-sub">This is</sub> sup.</del></p>'
+  );
+});
+
+test('sub and strikethrough overlapping should be detected 3', async () => {
+  const content = '~~~This is sup.~~~';
+  const result = await new MkImp().parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph"><sub class="md-sub"><del class="md-strikethrough">This is sup.</del></sub></p>'
+  );
+});
