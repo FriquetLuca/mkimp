@@ -11,6 +11,8 @@ tsconfig.json
 .prettierignore
 .prettierrc
 .eslintrc
+.husky
+.github
 jest.config.js
 examples/
 prettier.config.js

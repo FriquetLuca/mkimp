@@ -1,9 +1,9 @@
-/*!
+/*
  Language: Transact-SQL (T-SQL)
  Authors: David Simner, Grzegorz Smulko <greg.smulko@red-gate.com>
  Website: https://en.wikipedia.org/wiki/Transact-SQL
  Category: common
- */
+*/
 
 import { type HLJSApi } from "highlight.js";
 
