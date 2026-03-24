@@ -12,7 +12,4 @@ export default defineConfig([
       sourceType: 'module',
     },
   },
-  {
-    ignores: ['src/hljs/tsql.ts'],
-  },
 ]);
