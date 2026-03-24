@@ -430,9 +430,9 @@ export class Renderer {
       // Simple rendering without sections
       let result = '';
       for (const token of tokens) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result += await this.currentRenderer[token.type].call(
           this,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           token as any
         );
       }
@@ -463,9 +463,9 @@ export class Renderer {
 
       let inner = '';
       for (const token of sectionTokens) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         inner += await this.currentRenderer[token.type].call(
           this,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           token as any
         );
       }
