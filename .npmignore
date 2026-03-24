@@ -13,8 +13,5 @@ tsconfig.json
 .eslintrc
 .husky
 .github
-jest.config.js
 examples/
-prettier.config.js
 TODO.md
-package-lock.json
