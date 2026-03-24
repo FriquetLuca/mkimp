@@ -43,6 +43,18 @@ async function renderTocNodes(
 }
 
 const RENDERER_FNS: TokenRendering<string> = {
+  async conditional(token): Promise<string> {
+    for (const branch of token.branches) {
+      if (branch.condition === 'else') {
+        return await this.renderer(branch.tokens);
+      }
+      const data = this.metadata.get(branch.condition);
+      if (typeof data === 'boolean' && data === true) {
+        return await this.renderer(branch.tokens);
+      }
+    }
+    return '';
+  },
   async emoji(token) {
     const emoji = this.emojis[token.name];
     if (emoji === undefined) {

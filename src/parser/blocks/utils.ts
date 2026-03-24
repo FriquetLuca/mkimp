@@ -1,6 +1,11 @@
 import { htmlPatterns } from '../html';
 import { WHITESPACE_CHARS, type Line } from '../utils';
 
+export const openIf = /^\[\{\s*if\s+(?<params>.+?)\s*\}\]$/;
+export const elseIf = /^\[\{\s*else\s+if\s+(?<params>.+?)\s*\}\]$/;
+export const elsePlain = /^\[\{\s*else\s*\}\]$/;
+export const closeIf = /^\[\{\s*endif\s*\}\]$/;
+
 export const DIGIT_CHARS = new Set([
   '0',
   '1',

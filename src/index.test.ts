@@ -234,3 +234,70 @@ test('sub and strikethrough overlapping should be detected 3', async () => {
     '<p class="md-paragraph"><sub class="md-sub"><del class="md-strikethrough">This is sup.</del></sub></p>'
   );
 });
+
+test('conditional rendering if true', async () => {
+  const content = '[{ if betrue }]\nThis sentense is visible.\n[{ endif }]';
+  const result = await new MkImp({
+    metadata: new Map([
+      ['betrue', true],
+      ['befalse', false],
+    ]),
+  }).parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph">This sentense is visible.</p>'
+  );
+});
+
+test('conditional rendering if false', async () => {
+  const content =
+    '[{ if befalse }]\nThis sentense is not visible.\n[{ endif }]';
+  const result = await new MkImp({
+    metadata: new Map([
+      ['betrue', true],
+      ['befalse', false],
+    ]),
+  }).parse(content);
+  expect(result).toEqual('');
+});
+
+test('conditional rendering if branching', async () => {
+  const content =
+    '[{ if befalse }]\nThis sentense is not visible.\n[{ else if betrue }]\nThis sentense may be visible.\n[{ endif }]';
+  const result = await new MkImp({
+    metadata: new Map([
+      ['betrue', true],
+      ['befalse', false],
+    ]),
+  }).parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph">This sentense may be visible.</p>'
+  );
+});
+
+test('conditional rendering nested', async () => {
+  const content =
+    '[{ if betrue }]\nThis sentense is visible.\n[{ if befalse }]\nThis sentense is not visible.\n[{ endif }]\nAnd this one too!\n[{ endif }]';
+  const result = await new MkImp({
+    metadata: new Map([
+      ['betrue', true],
+      ['befalse', false],
+    ]),
+  }).parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph">This sentense is visible.</p><p class="md-paragraph">And this one too!</p>'
+  );
+});
+
+test('conditional rendering if branching nested', async () => {
+  const content =
+    '[{ if befalse }]\nThis sentense is not visible.\n[{ else if betrue }]\nThis sentense may be visible.\n[{ if befalse }]\nThis sentense is not visible either.\n[{ endif }]\n[{ endif }]';
+  const result = await new MkImp({
+    metadata: new Map([
+      ['betrue', true],
+      ['befalse', false],
+    ]),
+  }).parse(content);
+  expect(result).toEqual(
+    '<p class="md-paragraph">This sentense may be visible.</p>'
+  );
+});

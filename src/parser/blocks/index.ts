@@ -3,7 +3,10 @@ import { type Lexer } from '../lexer';
 import {
   checkListExtractor,
   closeFenceCodeBlockCount,
+  closeIf,
   cutCharFollowedByWhitespace,
+  elseIf,
+  elsePlain,
   extractCodeBlock,
   extractHeadingId,
   extractOrderedListItem,
@@ -28,6 +31,7 @@ import {
   isUnderlineHeading,
   isUnorderedListItem,
   openFenceCodeBlockCount,
+  openIf,
   processAlignTable,
   quoteLength,
   rebuildLineWhitespace,
@@ -146,9 +150,20 @@ export interface AbbrToken {
   title: string;
 }
 
+export interface ConditionalBranch {
+  condition: string;
+  tokens: MdToken[];
+}
+
+export interface ConditionalToken {
+  type: 'conditional';
+  branches: ConditionalBranch[];
+}
+
 export type MdBlockToken =
   | HeadingToken
   | CodeBlockToken
+  | ConditionalToken
   | HorizontalToken
   | BlockQuoteToken
   | ListToken
@@ -264,6 +279,10 @@ export class BlockTokenizer {
       return token;
     }
     token = await this.orderedList();
+    if (token) {
+      return token;
+    }
+    token = await this.conditionalBlock();
     if (token) {
       return token;
     }
@@ -655,6 +674,81 @@ export class BlockTokenizer {
     return {
       type: 'blockquote',
       tokens: blocks.getBlocks(),
+    };
+  }
+  async conditionalBlock(): Promise<MdToken | undefined> {
+    const firstLine = this.content[this.line];
+    const startMatch = openIf.exec(firstLine.content.trim());
+    if (!startMatch) return undefined;
+
+    const branches: { condition: string; lines: Line[] }[] = [];
+    let currentCondition = startMatch.groups?.params || '';
+    let currentLines: Line[] = [];
+
+    let depth = 1;
+    const startIndex = this.line;
+    this.line++;
+
+    while (this.line < this.content.length) {
+      const currentLine = this.content[this.line];
+      const content = currentLine.content.trim();
+
+      // Check for "Branch Splitters" ONLY at depth 1
+      if (depth === 1) {
+        const isElseIf = elseIf.exec(content);
+        const isElse = elsePlain.test(content);
+
+        if (isElseIf || isElse) {
+          // 1. Save the previous branch
+          branches.push({ condition: currentCondition, lines: currentLines });
+
+          // 2. Start the new branch
+          currentCondition = isElseIf ? isElseIf.groups?.params || '' : 'else';
+          currentLines = [];
+
+          this.line++;
+          continue; // Skip adding the [{ else }] tag to the lines
+        }
+      }
+
+      // Standard Depth Tracking
+      if (openIf.test(content)) {
+        depth++;
+      } else if (closeIf.test(content)) {
+        depth--;
+      }
+
+      if (depth === 0) break; // Found the final endif
+
+      currentLines.push(currentLine);
+      this.line++;
+    }
+
+    if (depth !== 0) {
+      this.line = startIndex;
+      return undefined;
+    }
+
+    // Push the final remaining branch
+    branches.push({ condition: currentCondition, lines: currentLines });
+    this.line++;
+
+    // 3. Process all branches into tokens
+    const processedBranches = await Promise.all(
+      branches.map(async (branch) => ({
+        condition: branch.condition,
+        tokens: (
+          await new BlockTokenizer({
+            lexer: this.lexer,
+            lines: branch.lines,
+          }).tokenize()
+        ).getBlocks(),
+      }))
+    );
+
+    return {
+      type: 'conditional',
+      branches: processedBranches,
     };
   }
   async orderedList(): Promise<ListToken | undefined> {

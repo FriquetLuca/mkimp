@@ -10,14 +10,13 @@ Maybe:
 6. figure caption for image
     ![Figure Caption](image.png){#fig:label}
 1. remove html comment
-2. sup (^...^) sub (~...~)
 3. Embedded PDFs or Documents
     ![](./file.pdf)
     ![](video.mp4)
 6. Frontmatter Conditional Rendering
-    {{ if Params.draft }}
-    🚧 This post is a draft.
-    {{ end }}
+{{ if Params.draft }}
+🚧 This post is a draft.
+{{ endif }}
 7. Labeled equations
     $$ E = mc^2 $$ {#eq:einstein}
 8. Story Engines
