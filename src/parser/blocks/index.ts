@@ -234,11 +234,11 @@ export class BlockTokenizer {
               if (this.lexer.frontMatter !== undefined) {
                 const json = await this.lexer.frontMatter(meta);
                 flattenJSONintoMap(json, this.lexer.metadata);
-                this.line = line;
+                this.line = line + 1;
               } else {
                 const json = JSON.parse(meta);
                 flattenJSONintoMap(json, this.lexer.metadata);
-                this.line = line;
+                this.line = line + 1;
               }
             } catch {
               this.line = startIndex;

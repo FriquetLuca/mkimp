@@ -2,12 +2,24 @@ import { MkImp } from '.';
 import path from 'path';
 import fs from 'fs';
 import { expect, test } from 'vitest';
+import jsyaml from 'js-yaml';
 
 test('frontmatter should be found correctly', async () => {
   const mkimp = await new MkImp().ast(
     '----\n{\n"hello":"world"\n}\n----\nHello!'
   );
   expect(mkimp.metadata).toEqual(new Map([['hello', 'world']]));
+});
+
+test('frontmatter should not generate extra separator', async () => {
+  const content =
+    '---\nlang: en\ncompany_name: Some Company\ncompany_address_line1: Somewhere\njob_position: Developer\n---\n\nCurrently looking for a job my friend.';
+  const mkimp = await new MkImp({
+    async frontMatter(content) {
+      return jsyaml.load(content, {});
+    },
+  }).ast(content);
+  expect(mkimp.tokens[0].type).toEqual('paragraph');
 });
 
 test('include', async () => {
