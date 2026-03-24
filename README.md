@@ -282,6 +282,19 @@ You can mix HTML with markdown:
 </div>
 ```
 
+#### Conditional Rendering
+
+```md
+[{ if befalse }]
+This sentense is not visible.
+[{ else if betrue }]
+This sentense may be visible.
+[{ if befalse }]
+This sentense is not visible either.
+[{ endif }]
+[{ endif }]
+```
+
 #### Includes
 
 ```md

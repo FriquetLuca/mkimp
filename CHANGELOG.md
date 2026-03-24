@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-03-24
+
+- Conditional rendering added.
+- Add a sup and sub notation.
+
 ## [4.1.0] - 2026-03-24
 
 - Patch off by one error in the front matter tokenization.

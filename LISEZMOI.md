@@ -223,6 +223,19 @@ Terme
 </div>
 ```
 
+#### Cendu conditionnel
+
+```md
+[{ if soitfaux }]
+Cette phrase n'est pas visible.
+[{ else if soitvrai }]
+Cette phrase est peut-être visible.
+[{ if soitfaux }]
+Cette phrase n'est pas visible non plus.
+[{ endif }]
+[{ endif }]
+```
+
 #### Inclusion de fichiers
 
 ```md
