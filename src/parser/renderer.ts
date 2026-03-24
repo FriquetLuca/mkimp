@@ -43,7 +43,10 @@ async function renderTocNodes(
 }
 
 const RENDERER_FNS: TokenRendering<string> = {
-  async conditional(token): Promise<string> {
+  async small(token) {
+    return `<p class="md-paragraph"><small class="md-small">${await this.renderer(token.tokens)}</small></p>`;
+  },
+  async conditional(token) {
     for (const branch of token.branches) {
       if (branch.condition === 'else') {
         return await this.renderer(branch.tokens);

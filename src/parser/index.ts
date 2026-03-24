@@ -28,6 +28,8 @@ export {
   type MetadataToken,
   type YoutubeToken,
   type MdInlineToken,
+  type SupToken,
+  type SubToken,
 } from './inlines';
 export {
   BlockTokenizer,
@@ -51,6 +53,9 @@ export {
   type TableOfContentToken,
   type AbbrToken,
   type MdBlockToken,
+  type ConditionalBranch,
+  type ConditionalToken,
+  type SmallToken,
 } from './blocks';
 export { InlineTokenizer, type InlineTokenizerOptions } from './inlines';
 export { Lexer, type EmojiRecord } from './lexer';

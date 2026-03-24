@@ -15,6 +15,7 @@ import {
   flattenJSONintoMap,
   isAbbr,
   isBlockquote,
+  isConditional,
   isDefinitionList,
   isFenceCodeBlock,
   isFootnoteRef,
@@ -26,6 +27,7 @@ import {
   isMaybeTable,
   isOrderedListItem,
   isRefLink,
+  isSmallBlock,
   isTable,
   isTOC,
   isUnderlineHeading,
@@ -160,6 +162,11 @@ export interface ConditionalToken {
   branches: ConditionalBranch[];
 }
 
+export interface SmallToken {
+  type: 'small';
+  tokens: MdToken[];
+}
+
 export type MdBlockToken =
   | HeadingToken
   | CodeBlockToken
@@ -178,6 +185,7 @@ export type MdBlockToken =
   | HTMLToken
   | ParagraphToken
   | FootnoteEndToken
+  | SmallToken
   | TableOfContentToken;
 
 export interface BlockTokenizerOptions {
@@ -195,6 +203,7 @@ function isBlockToken(
   lines: Line[]
 ) {
   return (
+    isConditional(level, line, lines) ||
     isOrderedListItem(currentContent) ||
     isUnorderedListItem(currentContent) ||
     isFenceCodeBlock(level, line, lines) ||
@@ -207,7 +216,8 @@ function isBlockToken(
     isHtml(level, line, lines) ||
     isFootnoteRef(level, line, lines) ||
     isTOC(level, line, lines) ||
-    isAbbr(level, line, lines)
+    isAbbr(level, line, lines) ||
+    isSmallBlock(level, line, lines)
   );
 }
 
@@ -927,6 +937,36 @@ export class BlockTokenizer {
       startAt: undefined,
       ordered: false,
       items,
+    };
+  }
+  async smallBlock(): Promise<MdToken | undefined> {
+    if (!isSmallBlock(this.level, this.line, this.content)) return undefined;
+
+    const lines: string[] = [];
+
+    while (this.line < this.content.length) {
+      const currentLine = this.content[this.line];
+      const raw = currentLine.content;
+
+      if (isSmallBlock(this.level, this.line, this.content)) {
+        // Clean the prefix from each line
+        lines.push(raw.replace(/^-#\s?/, ''));
+      } else if (
+        raw.trim() === '' ||
+        isBlockToken(raw, this.lexer, this.level, this.line, this.content)
+      ) {
+        // Stop at empty lines or other blocks
+        break;
+      } else {
+        // Optional: allow "lazy" continuation lines without the -#
+        lines.push(raw);
+      }
+      this.line++;
+    }
+
+    return {
+      type: 'small',
+      tokens: this.lexer.inlineLex(lines.join('\n')),
     };
   }
   table(): TableToken | undefined {

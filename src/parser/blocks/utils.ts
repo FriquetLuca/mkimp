@@ -585,3 +585,27 @@ export function isDefinitionList(level: number, currentLine: Line) {
   }
   return false;
 }
+
+export function isSmallBlock(level: number, line: number, lines: Line[]) {
+  const currentLine = lines[line];
+  if (currentLine.level === level) {
+    const content = currentLine.content.trimEnd();
+    return (
+      currentLine.level === level &&
+      content.length >= 2 &&
+      content.startsWith('-#') &&
+      (content.length === 2 ||
+        (content.length > 2 && WHITESPACE_CHARS.has(content[2])))
+    );
+  }
+  return false;
+}
+
+export function isConditional(
+  level: number,
+  line: number,
+  lines: Line[]
+): boolean {
+  const currentLine = lines[line];
+  return openIf.test(currentLine.content.trim());
+}

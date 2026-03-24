@@ -282,6 +282,12 @@ You can mix HTML with markdown:
 </div>
 ```
 
+#### Small content
+
+```md
+-# This is a small content.
+```
+
 #### Conditional Rendering
 
 ```md

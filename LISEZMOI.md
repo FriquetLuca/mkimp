@@ -223,6 +223,12 @@ Terme
 </div>
 ```
 
+#### Petit contenu
+
+```md
+-# Ceci est un petit contenu.
+```
+
 #### Cendu conditionnel
 
 ```md
