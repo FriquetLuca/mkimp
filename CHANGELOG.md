@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-03-24
+
+- Patch off by one error in the front matter tokenization.
+- Add test to check the off by one error.
+- Add new options to skip `KaTeX` or `hljs` in the renderer or override them entirely.
+- Export some utilities and the token types / interfaces to be able to write down full custom renderer.
+- Allow a partial overwriting of the default string renderer.
+
 ## [4.0.7] - 2025-08-09
 
 - Add missing abbreviation search from the block tokenizer.

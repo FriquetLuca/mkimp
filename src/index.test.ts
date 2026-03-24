@@ -22,6 +22,18 @@ test('frontmatter should not generate extra separator', async () => {
   expect(mkimp.tokens[0].type).toEqual('paragraph');
 });
 
+test('the renderer for a specific token should have a way to override it', async () => {
+  const content = 'This is a paragraph.';
+  const result = await new MkImp({
+    overrideRenderer: {
+      async paragraph(token) {
+        return `<p>${await this.renderer(token.tokens)}</p>`;
+      },
+    },
+  }).parse(content);
+  expect(result).toEqual('<p>This is a paragraph.</p>');
+});
+
 test('include', async () => {
   const mkimp = new MkImp({
     async include(location, from, to) {

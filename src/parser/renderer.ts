@@ -1,8 +1,6 @@
 import {
   cleanUrl,
   escapeText,
-  renderTocNodes,
-  type TOCNode,
   type MdToken,
   type RenderTarget,
   type RootToken,
@@ -14,6 +12,35 @@ import type { EmojiRecord, LinkRef } from './lexer';
 import hljsConstruct from '../hljs';
 import katex from 'katex';
 import type { HLJSApi } from 'highlight.js';
+
+export interface TOCNode {
+  token: HeadingToken;
+  children: TOCNode[];
+}
+
+async function renderTocNodes(
+  this: Renderer,
+  nodes: TOCNode[]
+): Promise<string> {
+  if (nodes.length === 0) return '';
+
+  let result = '<ul role="list" class="md-tableofcontent">';
+
+  for (const { token, children } of nodes) {
+    const content = await this.renderer(token.tokens);
+    result += `<li role="listitem" class="md-listitem">`;
+    if (token.id && token.id.length > 0) {
+      result += `<a class="md-link" href="#${token.id}">${token.headingIndex}${content}</a>`;
+    } else {
+      result += `${token.headingIndex}${content}`;
+    }
+    result += await renderTocNodes.call(this, children);
+    result += '</li>';
+  }
+
+  result += '</ul>';
+  return result;
+}
 
 const RENDERER_FNS: TokenRendering<string> = {
   async emoji(token) {
@@ -327,6 +354,12 @@ export interface RendererOptions {
   latex: (token: TexToken) => Promise<string>;
   useHLJS: boolean;
   hljs: () => HLJSApi;
+  overrideRenderer?: Partial<TokenRendering<string>>;
+  articleWrapper?: (content: string) => Promise<string>;
+  sectionWrapper?: (
+    content: string,
+    headingId: string | undefined
+  ) => Promise<string>;
 }
 
 export class Renderer {
@@ -343,6 +376,12 @@ export class Renderer {
   withSection: boolean;
   renderTarget: RenderTarget;
   hljs: HLJSApi | undefined;
+  currentRenderer: TokenRendering<string>;
+  articleWrapper: (content: string) => Promise<string>;
+  sectionWrapper: (
+    content: string,
+    headingId: string | undefined
+  ) => Promise<string>;
   constructor(root: RootToken, options: Partial<RendererOptions> = {}) {
     this.metadata = root.metadata;
     this.emojis = root.emojis;
@@ -361,12 +400,27 @@ export class Renderer {
       options?.useHLJS === true
         ? (options?.hljs ?? hljsConstruct)()
         : undefined;
+    this.currentRenderer = options?.overrideRenderer
+      ? { ...RENDERER_FNS, ...options.overrideRenderer }
+      : RENDERER_FNS;
+    this.articleWrapper =
+      options?.articleWrapper ??
+      (async (c) =>
+        `<article class="md-article" role="document" aria-label="Page content">${c}</article>`);
+    this.sectionWrapper =
+      options?.sectionWrapper ??
+      (async (inner, headingId) => {
+        if (headingId) {
+          return `<section class="md-section" role="region" aria-labelledby="${headingId}">${inner}</section>`;
+        }
+        return `<section>${inner}</section>`;
+      });
   }
   async render() {
     const content = await this.renderer(this.tokens);
     switch (this.renderTarget) {
       case 'article':
-        return `<article class="md-article" role="document" aria-label="Page content">${content}</article>`;
+        return await this.articleWrapper(content);
       case 'raw':
         return content;
     }
@@ -377,7 +431,10 @@ export class Renderer {
       let result = '';
       for (const token of tokens) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        result += await RENDERER_FNS[token.type].call(this, token as any);
+        result += await this.currentRenderer[token.type].call(
+          this,
+          token as any
+        );
       }
       return result;
     }
@@ -407,16 +464,13 @@ export class Renderer {
       let inner = '';
       for (const token of sectionTokens) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        inner += await RENDERER_FNS[token.type].call(this, token as any);
+        inner += await this.currentRenderer[token.type].call(
+          this,
+          token as any
+        );
       }
-
-      if (headingId) {
-        result += `<section class="md-section" role="region" aria-labelledby="${headingId}">${inner}</section>`;
-      } else {
-        result += `<section>${inner}</section>`;
-      }
+      result += await this.sectionWrapper(inner, headingId);
     }
-
     return result;
   }
 }

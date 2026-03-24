@@ -61,6 +61,12 @@ interface MkImpOptions {
   latex?: (token: TexToken) => Promise<string> // LaTeX code handler (default: KaTeX)
   withSection?: boolean; // Enable section-based rendering (default: false)
   renderTarget?: RenderTarget; // Output format (default: "raw")
+  useLatex?: boolean; // (default: true)
+  useHLJS?: boolean; // Decide if hljs should be used (default: true)
+  hljs?: () => HLJSApi; // Return your own highlight.js API (default: highlight.js)
+  overrideRenderer?: Partial<TokenRendering<string>>; // Override the renderer to handle your own tokenization
+  articleWrapper?: (content: string) => Promise<string>; // Override the article wrapper
+  sectionWrapper?: (content: string, headingId: string | undefined) => Promise<string>; // Override the section wrapper
 }
 
 type RenderTarget = "raw" | "article";
@@ -78,7 +84,6 @@ type EmojiRecord =
 ```ts
 class MkImp {
   constructor(options?: MkImpOptions);
-
   ast(markdown: string): Promise<RootToken>;  // Generate AST
   render(root: RootToken): Promise<string>;   // Render HTML from AST
   parse(markdown: string): Promise<string>;   // Directly parse markdown to HTML

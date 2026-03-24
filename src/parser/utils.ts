@@ -136,32 +136,3 @@ export function cleanUrl(href: string) {
   }
   return href;
 }
-
-export interface TOCNode {
-  token: HeadingToken;
-  children: TOCNode[];
-}
-
-export async function renderTocNodes(
-  this: Renderer,
-  nodes: TOCNode[]
-): Promise<string> {
-  if (nodes.length === 0) return '';
-
-  let result = '<ul role="list" class="md-tableofcontent">';
-
-  for (const { token, children } of nodes) {
-    const content = await this.renderer(token.tokens);
-    result += `<li role="listitem" class="md-listitem">`;
-    if (token.id && token.id.length > 0) {
-      result += `<a class="md-link" href="#${token.id}">${token.headingIndex}${content}</a>`;
-    } else {
-      result += `${token.headingIndex}${content}`;
-    }
-    result += await renderTocNodes.call(this, children);
-    result += '</li>';
-  }
-
-  result += '</ul>';
-  return result;
-}

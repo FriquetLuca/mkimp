@@ -1,7 +1,8 @@
-import type { RenderTarget, RootToken } from './utils';
+import type { RenderTarget, RootToken, TokenRendering } from './utils';
 import type { TexToken } from './blocks';
 import { type EmojiRecord, Lexer } from './lexer';
 import { Renderer } from './renderer';
+import type { HLJSApi } from 'highlight.js';
 
 export interface MkImpOptions {
   tabulation?: number;
@@ -21,6 +22,15 @@ export interface MkImpOptions {
   latex?: (token: TexToken) => Promise<string>;
   withSection?: boolean;
   renderTarget?: RenderTarget;
+  useLatex?: boolean;
+  useHLJS?: boolean;
+  hljs?: () => HLJSApi;
+  overrideRenderer?: Partial<TokenRendering<string>>;
+  articleWrapper?: (content: string) => Promise<string>;
+  sectionWrapper?: (
+    content: string,
+    headingId: string | undefined
+  ) => Promise<string>;
 }
 
 export class MkImp {
@@ -41,6 +51,15 @@ export class MkImp {
   latex?: (token: TexToken) => Promise<string>;
   withSection: boolean;
   renderTarget: RenderTarget;
+  useLatex: boolean;
+  useHLJS: boolean;
+  hljs?: () => HLJSApi;
+  overrideRenderer?: Partial<TokenRendering<string>>;
+  articleWrapper?: (content: string) => Promise<string>;
+  sectionWrapper?: (
+    content: string,
+    headingId: string | undefined
+  ) => Promise<string>;
   constructor(options: MkImpOptions = {}) {
     this.tabulation = options?.tabulation ?? 4;
     this.metadata = options?.metadata ?? new Map();
@@ -51,6 +70,12 @@ export class MkImp {
     this.latex = options?.latex;
     this.withSection = options?.withSection ?? false;
     this.renderTarget = options?.renderTarget ?? 'raw';
+    this.useLatex = options?.useLatex ?? true;
+    this.useHLJS = options?.useHLJS ?? true;
+    this.hljs = options?.hljs;
+    this.overrideRenderer = options?.overrideRenderer;
+    this.articleWrapper = options?.articleWrapper;
+    this.sectionWrapper = options?.sectionWrapper;
   }
   async ast(markdown: string): Promise<RootToken> {
     return await Lexer.lex(markdown, {
@@ -67,6 +92,11 @@ export class MkImp {
       latex: this.latex,
       withSection: this.withSection,
       renderTarget: this.renderTarget,
+      useHLJS: this.useHLJS,
+      useLatex: this.useLatex,
+      overrideRenderer: this.overrideRenderer,
+      articleWrapper: this.articleWrapper,
+      sectionWrapper: this.sectionWrapper,
     });
     return await render.render();
   }

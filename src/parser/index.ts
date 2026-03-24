@@ -54,5 +54,5 @@ export {
 } from './blocks';
 export { InlineTokenizer, type InlineTokenizerOptions } from './inlines';
 export { Lexer, type EmojiRecord } from './lexer';
-export { Renderer, type RendererOptions } from './renderer';
+export { Renderer, type RendererOptions, type TOCNode } from './renderer';
 export { MkImp, type MkImpOptions } from './mkimp';
