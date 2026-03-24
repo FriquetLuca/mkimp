@@ -88,7 +88,50 @@ class MkImp {
   render(root: RootToken): Promise<string>;   // Render HTML from AST
   parse(markdown: string): Promise<string>;   // Directly parse markdown to HTML
 }
+
+/*
+  The CSS root definitions for all the variables used in the `defaultStyle` variable.
+
+  The demo used theses root definition alongside it (not included):
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-size: calc(0.8rem + 0.25vw);
+  line-height: 1.6;
+*/
+const rootStyle: string;
+
+/*
+  The CSS scrollbar style used in the demo MkImp.
+
+  The demo also used this (not included):
+  * {
+    scrollbar-color: var(--md-border-color) var(--md-bg-color);
+    scrollbar-width: thin;
+  }
+*/
+const scrollbarStyle: string;
+
+/*
+The default CSS scrollbar width and color from MkImp demo applied on every single MkImp items that may overflow.
+*/
+const scrollbarOnAllStyle: string;
+/*
+  The default CSS style used in MkImp demo.
+
+  The demo also defined the following (not included):
+  html,
+  body {
+    color: var(--md-text-color);
+    background-color: var(--md-bg-color);
+    height: 100%;
+    overflow: hidden;
+  }
+
+  But since you may not want to apply the style everywhere, we defined the class `.md-page` that only apply the color and the background color.
+*/
+const defaultStyle: string;
 ```
+
+Note: Feel free to create and use your own style instead of the provided one.
 
 ---
 

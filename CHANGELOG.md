@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add new options to skip `KaTeX` or `hljs` in the renderer or override them entirely.
 - Export some utilities and the token types / interfaces to be able to write down full custom renderer.
 - Allow a partial overwriting of the default string renderer.
+- Export the default style for MkImp.
 
 ## [4.0.7] - 2025-08-09
 
