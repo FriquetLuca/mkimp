@@ -327,7 +327,9 @@ Rendering Mermaid is **up to you** — MkImp only passes it through.
 | `\|\|spoiler\|\|` / `>!spoiler!<` | Inline spoiler |
 | `:smile:` | Emoji |
 | `==highlight==` | Highlight text |
+| `~sub~` | Below |
 | `~~strikethrough~~` | Strikethrough |
+| `^sup^` | Above |
 | `^^overline^^` | Overline |
 | `__underline__` | Underline |
 | `*italic*` / `_italic_` | Italic |

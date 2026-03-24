@@ -268,7 +268,9 @@ Le rendu Mermaid est à votre charge.
 | `\|\|spoiler\|\|` / `>!spoiler!<` | Spoiler inline |
 | `:smile:` | Emoji |
 | `==texte==` | Surlignage |
+| `~sub~` | En bas |
 | `~~texte~~` | Barré |
+| `^sup^` | En haut |
 | `^^texte^^` | Ligne au-dessus |
 | `__texte__` | Souligné |
 | `*italique*` / `_italique_` | Italique |
