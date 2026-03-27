@@ -3,10 +3,8 @@ Language: LookML
 Author: Josh Temple <josh@spectacles.dev>
 Description: Language definition for LookML (Looker's dependency language).
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function lookml(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lookml(hljs: any) {
   const LITERALS = ['yes', 'no'];
   const KEY_MODE = { scope: 'keyword', match: /\w+\s*:/, relevance: 0 };
   const LIQUID_MODE = {

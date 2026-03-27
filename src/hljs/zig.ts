@@ -2,10 +2,8 @@
 Language: Zig
 Author: fwx <fwx5618177@gmail.com>
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function zig(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function zig(hljs: any) {
   const LITERALS = ['true', 'false', 'null', 'undefined'];
   const BUILT_INS = [
     'std',

@@ -404,75 +404,79 @@ export class InlineTokenizer {
           }
           break;
         case '$':
-          if (
-            this.index + 1 < this.content.length &&
-            this.content[this.index + 1] === '$'
-          ) {
-            this.index += 2;
-            const startIndex = this.index;
-            let hasEnd = false;
-            while (this.index < this.content.length) {
-              if (
-                this.content[this.index] === '\\' &&
-                this.index + 1 < this.content.length &&
-                ESCAPING_CHARS.has(this.content[this.index + 1])
-              ) {
-                this.index += 2;
-                continue;
-              }
-              if (
-                this.content[this.index] === '$' &&
-                this.index + 1 < this.content.length &&
-                this.content[this.index + 1] === '$'
-              ) {
-                hasEnd = true;
-                break;
-              }
-              this.index++;
-            }
-            if (hasEnd) {
-              this.#cleanBuffer(result);
-              result.push({
-                type: 'tex',
-                inline: true,
-                displayMode: true,
-                text: this.content.slice(startIndex, this.index),
-              });
-              this.index += 2;
-            } else {
-              this.textBuffer += currentSymbol;
-              this.index = startIndex - 1;
-            }
+          if (!this.lexer.useLatex) {
+            this.textBuffer += this.content[this.index++];
           } else {
-            const startIndex = ++this.index;
-            let hasEnd = false;
-            while (this.index < this.content.length) {
-              if (
-                this.content[this.index] === '\\' &&
-                this.index + 1 < this.content.length &&
-                ESCAPING_CHARS.has(this.content[this.index + 1])
-              ) {
+            if (
+              this.index + 1 < this.content.length &&
+              this.content[this.index + 1] === '$'
+            ) {
+              this.index += 2;
+              const startIndex = this.index;
+              let hasEnd = false;
+              while (this.index < this.content.length) {
+                if (
+                  this.content[this.index] === '\\' &&
+                  this.index + 1 < this.content.length &&
+                  ESCAPING_CHARS.has(this.content[this.index + 1])
+                ) {
+                  this.index += 2;
+                  continue;
+                }
+                if (
+                  this.content[this.index] === '$' &&
+                  this.index + 1 < this.content.length &&
+                  this.content[this.index + 1] === '$'
+                ) {
+                  hasEnd = true;
+                  break;
+                }
+                this.index++;
+              }
+              if (hasEnd) {
+                this.#cleanBuffer(result);
+                result.push({
+                  type: 'tex',
+                  inline: true,
+                  displayMode: true,
+                  text: this.content.slice(startIndex, this.index),
+                });
                 this.index += 2;
-                continue;
+              } else {
+                this.textBuffer += currentSymbol;
+                this.index = startIndex - 1;
               }
-              if (this.content[this.index] === '$') {
-                hasEnd = true;
-                break;
-              }
-              this.index++;
-            }
-            if (hasEnd) {
-              this.#cleanBuffer(result);
-              result.push({
-                type: 'tex',
-                inline: true,
-                displayMode: false,
-                text: this.content.slice(startIndex, this.index),
-              });
-              this.index++;
             } else {
-              this.textBuffer += currentSymbol;
-              this.index = startIndex;
+              const startIndex = ++this.index;
+              let hasEnd = false;
+              while (this.index < this.content.length) {
+                if (
+                  this.content[this.index] === '\\' &&
+                  this.index + 1 < this.content.length &&
+                  ESCAPING_CHARS.has(this.content[this.index + 1])
+                ) {
+                  this.index += 2;
+                  continue;
+                }
+                if (this.content[this.index] === '$') {
+                  hasEnd = true;
+                  break;
+                }
+                this.index++;
+              }
+              if (hasEnd) {
+                this.#cleanBuffer(result);
+                result.push({
+                  type: 'tex',
+                  inline: true,
+                  displayMode: false,
+                  text: this.content.slice(startIndex, this.index),
+                });
+                this.index++;
+              } else {
+                this.textBuffer += currentSymbol;
+                this.index = startIndex;
+              }
             }
           }
           break;

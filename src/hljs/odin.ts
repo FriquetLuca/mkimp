@@ -1,5 +1,3 @@
-import { type HLJSApi } from 'highlight.js';
-
 /*
 Language: Odin
 Author: Ginger Bill <bill@gingerbill.org>
@@ -7,7 +5,8 @@ Description: Odin is a general-purpose programming language with distinct typing
 Website: https://odin-lang.org/
 Category: common
 */
-export function odin(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function odin(hljs: any) {
   const TYPES = [
     'bool',
     'b8',

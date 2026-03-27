@@ -1,4 +1,3 @@
-import hljs, { type LanguageFn } from 'highlight.js';
 import { bbcode } from './bbcode';
 import { hlsl } from './hlsl';
 import { liquid } from './liquid';
@@ -15,8 +14,9 @@ import { blade } from './blade';
 import { c3 } from './c3';
 import { cobol } from './cobol';
 import { curl } from './curl';
+import { type HighlighterSignature } from '../parser/renderer';
 
-function generatehljs() {
+export async function registerToHLJS(hljs: HighlighterSignature) {
   hljs.registerLanguage('bbcode', bbcode);
   hljs.registerLanguage('hlsl', hlsl);
   hljs.registerLanguage('liquid', liquid);
@@ -27,13 +27,11 @@ function generatehljs() {
   hljs.registerLanguage('zig', zig);
   hljs.registerLanguage('blade', blade);
   hljs.registerLanguage('curl', curl);
-  hljs.registerLanguage('c3', c3 as LanguageFn);
-  hljs.registerLanguage('tsql', tsql as LanguageFn);
-  hljs.registerLanguage('prisma', prisma as LanguageFn);
-  hljs.registerLanguage('lookml', lookml as LanguageFn);
-  hljs.registerLanguage('cobol', cobol as unknown as LanguageFn);
-  hljs.registerLanguage('metapost', metapost as unknown as LanguageFn);
+  hljs.registerLanguage('c3', c3);
+  hljs.registerLanguage('tsql', tsql);
+  hljs.registerLanguage('prisma', prisma);
+  hljs.registerLanguage('lookml', lookml);
+  hljs.registerLanguage('cobol', cobol);
+  hljs.registerLanguage('metapost', metapost);
   return hljs;
 }
-
-export default generatehljs;

@@ -38,6 +38,7 @@ interface LexerOptions {
   tableOfContents?: HeadingToken[];
   abbrs?: AbbrToken[];
   spoilerCount?: number;
+  useLatex?: boolean;
 }
 
 interface StaticLexerOptions {
@@ -58,6 +59,7 @@ export class Lexer {
   metadata: Map<string, string | number | boolean | bigint>;
   emojis: Record<string, EmojiRecord>;
   tabulation: number;
+  useLatex: boolean;
   frontMatter?: (content: string) => Promise<unknown>;
   include?: (
     location: string,
@@ -97,6 +99,7 @@ export class Lexer {
     this.tableOfContents = options?.tableOfContents ?? [];
     this.abbrs = options?.abbrs ?? [];
     this.spoilerCount = options?.spoilerCount ?? 0;
+    this.useLatex = options?.useLatex ?? true;
   }
   newHeading(depth: number) {
     switch (depth) {
@@ -167,6 +170,7 @@ export class Lexer {
         tableOfContents: options?.tableOfContents,
         abbrs: options?.abbrs,
         spoilerCount: options?.spoilerCount,
+        useLatex: options?.useLatex,
       });
     const _blocks = await new BlockTokenizer({
       lexer,
@@ -208,6 +212,7 @@ export class Lexer {
         tableOfContents: options?.tableOfContents,
         abbrs: options?.abbrs,
         spoilerCount: options?.spoilerCount,
+        useLatex: options?.useLatex,
       });
     const inline = new InlineTokenizer({
       lexer,

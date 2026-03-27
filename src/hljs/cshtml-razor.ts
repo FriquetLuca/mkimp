@@ -3,10 +3,8 @@
  * Requires: xml.js, csharp.js, css.js, javascript.js
  * Author: Roman Resh <romanresh@live.com>
  */
-
-import type { Mode, HLJSApi } from 'highlight.js';
-
-export function razor(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function razor(hljs: any) {
   const SPECIAL_SYMBOL_CLASSNAME = 'built_in';
   const CONTENT_REPLACER = {};
   const closed_brace = {
@@ -110,7 +108,7 @@ export function razor(hljs: HLJSApi) {
   };
   const xml_blocks = getXmlBlocks(hljs, [
     razor_inline_expresion,
-    razor_parentheses_block as Mode,
+    razor_parentheses_block,
   ]);
   const razor_directives_prefix =
     '^\\s*@(page|model|using|inherits|inject|layout)';
@@ -329,8 +327,8 @@ export function razor(hljs: HLJSApi) {
     contains: contains,
   };
 }
-
-function getXmlBlocks(hljs: HLJSApi, additional_blocks: Mode[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getXmlBlocks(hljs: any, additional_blocks: any[]) {
   const xml_comment = hljs.COMMENT('<!--', '-->', {
     relevance: 10,
   });

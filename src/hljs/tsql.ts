@@ -4,10 +4,8 @@
  Website: https://en.wikipedia.org/wiki/Transact-SQL
  Category: common
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function tsql(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function tsql(hljs: any) {
   return {
     name: 'T-SQL',
     case_insensitive: true,

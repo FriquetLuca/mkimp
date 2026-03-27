@@ -1,6 +1,6 @@
 {
   "name": "mkimp",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "description": "Write markdown like a programmer should be able to",
   "license": "MIT",
   "author": "FriquetLuca",
@@ -52,10 +52,6 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.0",
     "vitest": "^4.1.1"
-  },
-  "dependencies": {
-    "highlight.js": "^11.11.1",
-    "katex": "^0.16.40"
   },
   "lint-staged": {
     "**/*.{js,ts,mjs,mts,json}": [

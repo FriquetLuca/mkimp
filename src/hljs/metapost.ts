@@ -8,10 +8,8 @@ Author: Maxime Chupin <notezik@gmail.com>
 Category: graphic
 Website: https://tug.org/metapost.html
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function metapost(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function metapost(hljs: any) {
   const COMMENT = hljs.COMMENT('%', '$', { relevance: 0 });
 
   const MACRO_DEF = {

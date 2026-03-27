@@ -1,8 +1,7 @@
 import type { RenderTarget, RootToken, TokenRendering } from './utils';
 import type { TexToken } from './blocks';
 import { type EmojiRecord, Lexer } from './lexer';
-import { Renderer } from './renderer';
-import type { HLJSApi } from 'highlight.js';
+import { type HighlighterSignature, Renderer } from './renderer';
 
 export interface MkImpOptions {
   tabulation?: number;
@@ -24,7 +23,7 @@ export interface MkImpOptions {
   renderTarget?: RenderTarget;
   useLatex?: boolean;
   useHLJS?: boolean;
-  hljs?: () => HLJSApi;
+  highlighter?: () => Promise<HighlighterSignature>;
   overrideRenderer?: Partial<TokenRendering<string>>;
   articleWrapper?: (content: string) => Promise<string>;
   sectionWrapper?: (
@@ -53,7 +52,7 @@ export class MkImp {
   renderTarget: RenderTarget;
   useLatex: boolean;
   useHLJS: boolean;
-  hljs?: () => HLJSApi;
+  hljs?: () => Promise<HighlighterSignature>;
   overrideRenderer?: Partial<TokenRendering<string>>;
   articleWrapper?: (content: string) => Promise<string>;
   sectionWrapper?: (
@@ -72,7 +71,7 @@ export class MkImp {
     this.renderTarget = options?.renderTarget ?? 'raw';
     this.useLatex = options?.useLatex ?? true;
     this.useHLJS = options?.useHLJS ?? true;
-    this.hljs = options?.hljs;
+    this.hljs = options?.highlighter;
     this.overrideRenderer = options?.overrideRenderer;
     this.articleWrapper = options?.articleWrapper;
     this.sectionWrapper = options?.sectionWrapper;
@@ -82,17 +81,20 @@ export class MkImp {
       tabulation: this.tabulation,
       metadata: this.metadata,
       emojis: this.emojis,
+      useLatex: this.useLatex,
       frontMatter: this.frontMatter,
       include: this.include,
       includeCode: this.includeCode,
     });
   }
   async render(root: RootToken): Promise<string> {
+    const hljs = this.hljs ? await this.hljs() : undefined;
     const render = new Renderer(root, {
       latex: this.latex,
       withSection: this.withSection,
       renderTarget: this.renderTarget,
       useHLJS: this.useHLJS,
+      hljs,
       useLatex: this.useLatex,
       overrideRenderer: this.overrideRenderer,
       articleWrapper: this.articleWrapper,

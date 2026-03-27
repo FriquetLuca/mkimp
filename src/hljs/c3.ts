@@ -1,10 +1,9 @@
-import { type HLJSApi } from 'highlight.js';
-
 /*
 Language: C3
 Website: https://www.learn-c3.org
 */
-export function c3(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function c3(hljs: any) {
   const C3_NESTED_COMMENT = hljs.COMMENT('/\\*', '\\*/', {
     contains: [hljs.C_BLOCK_COMMENT_MODE],
   });

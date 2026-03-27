@@ -13,8 +13,6 @@
 If you'd like to propose new features, please open an issue or a pull request. If a feature is declined, feel free to fork the project and build on it.
 
 MkImp uses:
-- [`highlight.js`](https://highlightjs.org/) for syntax highlighting (you can choose what languages you want to support, no stylesheet are given)
-- [`KaTeX`](https://katex.org/) for mathematical formulas (you can use another LaTeX renderer, no stylesheet are given)
 - Optionally supports [`Mermaid`](https://mermaid.js.org/) for diagrams (you must handle rendering yourself and no stylesheet are given)
 
 ---
@@ -59,20 +57,46 @@ A demo of MkImp is available here: [MkImp Demo](https://friquetluca.github.io/mk
 ```ts
 interface MkImpOptions {
   tabulation?: number; // Number of spaces per indentation level (default: 4)
-  metadata?: Map<string, string>; // Front matter metadata (won't override existing entries)
+  metadata?: Map<string, string | number | boolean | bigint>; // Front matter metadata (won't override existing entries)
   emojis?: Record<string, EmojiRecord>; // Custom emoji definitions
   frontMatter?: (content: string) => Promise<unknown>; // Custom front matter parser (default: JSON)
   include?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // INCLUDE block handler
   includeCode?: (location: string, from?: number, to?: number) => Promise<string | undefined>; // INCLUDECODE block handler
-  latex?: (token: TexToken) => Promise<string> // LaTeX code handler (default: KaTeX)
   withSection?: boolean; // Enable section-based rendering (default: false)
   renderTarget?: RenderTarget; // Output format (default: "raw")
   useLatex?: boolean; // (default: true)
-  useHLJS?: boolean; // Decide if hljs should be used (default: true)
-  hljs?: () => HLJSApi; // Return your own highlight.js API (default: highlight.js)
-  overrideRenderer?: Partial<TokenRendering<string>>; // Override the renderer to handle your own tokenization
+  latex?: (token: TexToken) => Promise<string> // return your own LaTeX transpiler.
+  useHLJS?: boolean; // (default: true)
+  highlighter?: () => Promise<HighlighterSignature>; // Return your own synthax highlighter.
+  overrideRenderer?: Partial<TokenRendering<string>>; // Override the renderer to handle your own token rendering
   articleWrapper?: (content: string) => Promise<string>; // Override the article wrapper
   sectionWrapper?: (content: string, headingId: string | undefined) => Promise<string>; // Override the section wrapper
+}
+
+interface LexerOptions {
+  tabulation?: number;
+  metadata?: Map<string, string | number | boolean | bigint>;
+  emojis?: Record<string, EmojiRecord>;
+  frontMatter?: (content: string) => Promise<unknown>;
+  include?: (
+    location: string,
+    from: number | undefined,
+    to: number | undefined
+  ) => Promise<string | undefined>;
+  includeCode?: (
+    location: string,
+    from: number | undefined,
+    to: number | undefined
+  ) => Promise<string | undefined>;
+  includedLocations?: Set<string>;
+  tableOfContents?: HeadingToken[];
+  abbrs?: AbbrToken[];
+  spoilerCount?: number;
+  useLatex?: boolean;
+}
+
+interface StaticLexerOptions {
+  lexer: Lexer;
 }
 
 type RenderTarget = "raw" | "article";
@@ -81,6 +105,13 @@ type EmojiRecord =
   | { type: "char"; char: string }
   | { type: "img"; url: string; alt?: string; width?: number; height?: number }
   | { type: "i"; className: string };
+
+// Signature of the highlighter you should pass, it's based on highlight.js signature.
+interface HighlighterSignature {
+  getLanguage: (languageName: string) => unknown | undefined;
+  highlight: (content: string, options: { language: string }) => { value: string };
+  registerLanguage: (languageName: string, language: (highlighter: any) => any) => void
+}
 ```
 
 ---
@@ -93,6 +124,13 @@ class MkImp {
   ast(markdown: string): Promise<RootToken>;  // Generate AST
   render(root: RootToken): Promise<string>;   // Render HTML from AST
   parse(markdown: string): Promise<string>;   // Directly parse markdown to HTML
+}
+
+class Lexer {
+  lex(content: string): Promise<MdToken[]>; // Handle the full lexing for the current lexer.
+  inlineLex(content: string): MdToken[]; // Handle the inline lexing for the current lexer.
+  static async lex(content: string, options?: LexerOptions & Partial<StaticLexerOptions>): Promise<RootToken>; // Create a lexer to handle full lexing
+  static inlineLex(content: string, options?: LexerOptions & Partial<StaticLexerOptions>): MdToken[]; // Create a lexer to handle inline lexing
 }
 
 /*

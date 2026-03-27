@@ -11,9 +11,6 @@ import {
 } from './utils';
 import type { AbbrToken, HeadingToken, TexToken } from './blocks';
 import type { EmojiRecord, LinkRef } from './lexer';
-import hljsConstruct from '../hljs';
-import katex from 'katex';
-import type { HLJSApi } from 'highlight.js';
 
 export interface TOCNode {
   token: HeadingToken;
@@ -95,7 +92,7 @@ const RENDERER_FNS: TokenRendering<string> = {
       let codeText = '';
       let lang = '';
       if (token.lang && this.hljs && this.hljs.getLanguage(token.lang)) {
-        if (token.lang) lang = ` language-${token.lang}`;
+        lang = ` language-${token.lang}`;
         codeText = this.hljs.highlight(token.content, {
           language: token.lang,
         }).value;
@@ -344,14 +341,18 @@ const RENDERER_FNS: TokenRendering<string> = {
   },
 };
 
-const defaultLatex = async (token: TexToken) => {
-  return katex.renderToString(token.text, {
-    strict: false,
-    throwOnError: false,
-    output: 'htmlAndMathml',
-    displayMode: token.displayMode,
-  });
-};
+export interface HighlighterSignature {
+  getLanguage: (languageName: string) => unknown | undefined;
+  highlight: (
+    content: string,
+    options: { language: string }
+  ) => { value: string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  registerLanguage: (
+    languageName: string,
+    language: (highlighter: any) => any
+  ) => void;
+}
 
 export interface RendererOptions {
   withSection: boolean;
@@ -359,7 +360,7 @@ export interface RendererOptions {
   useLatex: boolean;
   latex: (token: TexToken) => Promise<string>;
   useHLJS: boolean;
-  hljs: () => HLJSApi;
+  hljs: HighlighterSignature;
   overrideRenderer?: Partial<TokenRendering<string>>;
   articleWrapper?: (content: string) => Promise<string>;
   sectionWrapper?: (
@@ -381,7 +382,7 @@ export class Renderer {
   tokens: MdToken[];
   withSection: boolean;
   renderTarget: RenderTarget;
-  hljs: HLJSApi | undefined;
+  hljs: HighlighterSignature | undefined;
   currentRenderer: TokenRendering<string>;
   articleWrapper: (content: string) => Promise<string>;
   sectionWrapper: (
@@ -400,12 +401,8 @@ export class Renderer {
     this.abbrs = root.abbrs;
     this.withSection = options?.withSection ?? false;
     this.renderTarget = options?.renderTarget ?? 'raw';
-    this.latex =
-      options?.useLatex === true ? (options?.latex ?? defaultLatex) : undefined;
-    this.hljs =
-      options?.useHLJS === true
-        ? (options?.hljs ?? hljsConstruct)()
-        : undefined;
+    this.latex = options?.useLatex === true ? options?.latex : undefined;
+    this.hljs = options?.useHLJS === true ? options?.hljs : undefined;
     this.currentRenderer = options?.overrideRenderer
       ? { ...RENDERER_FNS, ...options.overrideRenderer }
       : RENDERER_FNS;

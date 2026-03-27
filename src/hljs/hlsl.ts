@@ -5,19 +5,16 @@ Author: Stef Levesque
 Website: https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl
 Category: graphics
 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function hlsl(hljs: any) {
+  const HLSL_NUMBER_RE =
+    '(-?)(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?([hHfFlL]?)|\\.\\d+)([eE][-+]?\\d+)?([hHfFlL]?))'; // 0x..., 0..., decimal, float, half, double
 
-import { type HLJSApi } from 'highlight.js';
-
-const HLSL_NUMBER_RE =
-  '(-?)(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?([hHfFlL]?)|\\.\\d+)([eE][-+]?\\d+)?([hHfFlL]?))'; // 0x..., 0..., decimal, float, half, double
-
-const HLSL_NUMBER_MODE = {
-  className: 'number',
-  begin: HLSL_NUMBER_RE,
-  relevance: 0,
-};
-
-export function hlsl(hljs: HLJSApi) {
+  const HLSL_NUMBER_MODE = {
+    className: 'number',
+    begin: HLSL_NUMBER_RE,
+    relevance: 0,
+  };
   const matrixBases =
     'bool double float half int uint ' +
     'min16float min10float min16int min12int min16uint matrix';

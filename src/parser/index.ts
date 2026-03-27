@@ -62,6 +62,11 @@ export {
 } from './blocks';
 export { InlineTokenizer, type InlineTokenizerOptions } from './inlines';
 export { Lexer, type EmojiRecord, type LinkRef } from './lexer';
-export { Renderer, type RendererOptions, type TOCNode } from './renderer';
+export {
+  Renderer,
+  type RendererOptions,
+  type TOCNode,
+  type HighlighterSignature,
+} from './renderer';
 export { MkImp, type MkImpOptions } from './mkimp';
 export * from './style';

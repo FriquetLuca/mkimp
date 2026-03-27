@@ -4,10 +4,8 @@ Author: Jared Luboff <jluboff8@gmail.com>
 Description: ZenScript language support
 Category: scripting
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function zenscript(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function zenscript(hljs: any) {
   return {
     aliases: ['zenscript', 'zs'],
     keywords: {

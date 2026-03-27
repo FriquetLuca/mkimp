@@ -4,10 +4,8 @@ Description: Magik is an object-oriented programming language that supports mult
 Author: Sebastiaan Speck <sebastiaanspeck@github.com>
 Category: enterprise // FIXME: Is this the correct category?
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function magik(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function magik(hljs: any) {
   const VARIABLES = [
     '_dynamic',
     '_global',

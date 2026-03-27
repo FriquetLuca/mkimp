@@ -5,11 +5,9 @@ Description: language definition for Prisma schema language
 Website: https://www.prisma.io/
 Category: database ORM
 */
-
-import { type HLJSApi } from 'highlight.js';
-
 /** @type LanguageFn */
-export function prisma(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function prisma(hljs: any) {
   // Prisma 키워드
   const TYPES = [
     'Int',

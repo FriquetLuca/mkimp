@@ -1,6 +1,6 @@
-import { type HLJSApi } from 'highlight.js';
 // https://github.com/miken32/highlightjs-blade/blob/main/README.md
-export function blade(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function blade(hljs: any) {
   return {
     name: 'Blade',
     case_insensitive: true,

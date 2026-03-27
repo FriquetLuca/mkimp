@@ -4,10 +4,8 @@
  Author: John Foster <jfoster@esri.com>
  Description: Syntax highlighting for cURL commands.
 */
-
-import { type HLJSApi } from 'highlight.js';
-
-export function curl(hljs: HLJSApi) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function curl(hljs: any) {
   const QUOTE_STRING = {
     className: 'string',
     begin: /"/,

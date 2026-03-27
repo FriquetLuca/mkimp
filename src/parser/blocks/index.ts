@@ -534,6 +534,9 @@ export class BlockTokenizer {
     return undefined;
   }
   tex(): TexToken | undefined {
+    if (!this.lexer.useLatex) {
+      return undefined;
+    }
     const currentLine = this.content[this.line];
     if (this.level < currentLine.level) {
       return undefined;
