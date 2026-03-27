@@ -5,9 +5,12 @@ export {
   type TokenRendering,
   type TokenType,
   type ExtractToken,
+  type RenderTarget,
   stringToLines,
   escapeText,
   cleanUrl,
+  generateSections,
+  generateTableOfContent,
   WHITESPACE_CHARS,
 } from './utils';
 export {
@@ -58,7 +61,7 @@ export {
   type SmallToken,
 } from './blocks';
 export { InlineTokenizer, type InlineTokenizerOptions } from './inlines';
-export { Lexer, type EmojiRecord } from './lexer';
+export { Lexer, type EmojiRecord, type LinkRef } from './lexer';
 export { Renderer, type RendererOptions, type TOCNode } from './renderer';
 export { MkImp, type MkImpOptions } from './mkimp';
 export * from './style';

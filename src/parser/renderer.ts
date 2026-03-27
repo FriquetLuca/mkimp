@@ -1,6 +1,8 @@
 import {
   cleanUrl,
   escapeText,
+  generateSections,
+  generateTableOfContent,
   type MdToken,
   type RenderTarget,
   type RootToken,
@@ -336,24 +338,7 @@ const RENDERER_FNS: TokenRendering<string> = {
     return `<img src="${imgcleanHref}" alt="${alt}" class="md-image"${title}>`;
   },
   async tableOfContent() {
-    const root: TOCNode[] = [];
-    const stack: { depth: number; node: TOCNode }[] = [];
-
-    for (const token of this.tableOfContents) {
-      const node: TOCNode = { token, children: [] };
-
-      while (stack.length > 0 && stack[stack.length - 1].depth >= token.depth) {
-        stack.pop();
-      }
-
-      if (stack.length === 0) {
-        root.push(node);
-      } else {
-        stack[stack.length - 1].node.children.push(node);
-      }
-
-      stack.push({ depth: token.depth, node });
-    }
+    const root = generateTableOfContent(this.tableOfContents);
 
     return await renderTocNodes.call(this, root);
   },
@@ -461,21 +446,7 @@ export class Renderer {
     }
 
     // Group tokens into sections based on headings
-    const sections: MdToken[][] = [];
-    let currentSection: MdToken[] = [];
-    for (const token of tokens) {
-      if (token.type === 'heading') {
-        if (currentSection.length > 0) {
-          sections.push(currentSection);
-        }
-        currentSection = [token];
-      } else {
-        currentSection.push(token);
-      }
-    }
-    if (currentSection.length > 0) {
-      sections.push(currentSection);
-    }
+    const sections: MdToken[][] = generateSections(tokens);
 
     let result = '';
     for (const sectionTokens of sections) {

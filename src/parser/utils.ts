@@ -1,7 +1,7 @@
 import type { AbbrToken, HeadingToken, MdBlockToken } from './blocks';
 import type { MdInlineToken } from './inlines';
 import type { EmojiRecord, LinkRef } from './lexer';
-import type { Renderer } from './renderer';
+import type { Renderer, TOCNode } from './renderer';
 
 export interface Line {
   level: number;
@@ -135,4 +135,46 @@ export function cleanUrl(href: string) {
     return null;
   }
   return href;
+}
+
+export function generateSections(tokens: MdToken[]) {
+  const sections: MdToken[][] = [];
+  let currentSection: MdToken[] = [];
+  for (const token of tokens) {
+    if (token.type === 'heading') {
+      if (currentSection.length > 0) {
+        sections.push(currentSection);
+      }
+      currentSection = [token];
+    } else {
+      currentSection.push(token);
+    }
+  }
+  if (currentSection.length > 0) {
+    sections.push(currentSection);
+  }
+  return sections;
+}
+
+export function generateTableOfContent(tableOfContents: HeadingToken[]) {
+  const root: TOCNode[] = [];
+  const stack: { depth: number; node: TOCNode }[] = [];
+
+  for (const token of tableOfContents) {
+    const node: TOCNode = { token, children: [] };
+
+    while (stack.length > 0 && stack[stack.length - 1].depth >= token.depth) {
+      stack.pop();
+    }
+
+    if (stack.length === 0) {
+      root.push(node);
+    } else {
+      stack[stack.length - 1].node.children.push(node);
+    }
+
+    stack.push({ depth: token.depth, node });
+  }
+
+  return root;
 }
