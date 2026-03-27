@@ -347,9 +347,9 @@ export interface HighlighterSignature {
     content: string,
     options: { language: string }
   ) => { value: string };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerLanguage: (
     languageName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     language: (highlighter: any) => any
   ) => void;
 }
