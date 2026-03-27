@@ -1,6 +1,6 @@
 {
   "name": "mkimp",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "Write markdown like a programmer should be able to",
   "license": "MIT",
   "author": "FriquetLuca",
@@ -41,7 +41,6 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/js-yaml": "^4.0.9",
-    "@types/katex": "^0.16.8",
     "@types/node": "^25.5.0",
     "esbuild": "0.27.4",
     "eslint": "^9.39.4",
