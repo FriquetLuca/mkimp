@@ -259,11 +259,11 @@ export class BlockTokenizer {
               if (this.lexer.frontMatter !== undefined) {
                 const json = await this.lexer.frontMatter(meta);
                 flattenJSONintoMap(json, this.lexer.metadata);
-                this.line = line + 1;
+                this.line = endIndex + 1;
               } else {
                 const json = JSON.parse(meta);
                 flattenJSONintoMap(json, this.lexer.metadata);
-                this.line = line + 1;
+                this.line = endIndex + 1;
               }
             } catch {
               this.line = startIndex;
@@ -1053,7 +1053,7 @@ export class BlockTokenizer {
     }
     const match = /^\[\^([^\]]+)\]:\s+(.+)/.exec(currentItem.content);
     if (match) {
-      const [ref, content] = match;
+      const [, ref, content] = match;
       this.line++;
       const lines = [rebuildLineWhitespace(content, this.lexer.tabulation)];
       let previousIsEmpty = false;
@@ -1095,6 +1095,7 @@ export class BlockTokenizer {
           lines,
         }).tokenize();
         const tokens = _tokens.getBlocks();
+        console.log(ref);
         this.lexer.footnoteDefs.set(ref, tokens);
       }
       return true;

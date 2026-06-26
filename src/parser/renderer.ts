@@ -89,7 +89,7 @@ const RENDERER_FNS: TokenRendering<string> = {
   async codeblock(token) {
     if (token.from !== undefined || token.to !== undefined) {
       const from = token.from || 1;
-      let codeText = '';
+      let codeText: string;
       let lang = '';
       if (token.lang && this.hljs && this.hljs.getLanguage(token.lang)) {
         lang = ` language-${token.lang}`;
@@ -159,6 +159,7 @@ const RENDERER_FNS: TokenRendering<string> = {
     return `<sup id="fnref:${token.ref}"><a class="md-link" href="#fn:${token.ref}">[${this.footnoteIndexRefs.get(token.ref) ?? -1}]</a></sup>`;
   },
   async footnoteEnd() {
+    console.log('footnotes');
     let result = '';
     const refSize = this.footnoteRefs.size;
     for (let i = 1; i <= refSize; i++) {

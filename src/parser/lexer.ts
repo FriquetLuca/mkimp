@@ -178,7 +178,7 @@ export class Lexer {
     }).initialize();
     const blocks = await _blocks.tokenize();
     const tokens = blocks.getBlocks();
-    if (lexer.footnoteDefs.size > 0 && lexer.footnoteIndexMap.size > 1) {
+    if (lexer.footnoteDefs.size > 0 && lexer.footnoteIndexMap.size > 0) {
       tokens.push({
         type: 'footnoteEnd',
       });

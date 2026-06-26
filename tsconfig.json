@@ -11,8 +11,6 @@
 
     // Pathing & resolution
     "rootDir": "./src",
-    "baseUrl": ".",
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

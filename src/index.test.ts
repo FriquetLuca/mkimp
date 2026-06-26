@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { MkImp } from '.';
 import path from 'path';
 import fs from 'fs';
@@ -13,7 +14,7 @@ test('frontmatter should be found correctly', async () => {
 
 test('frontmatter should not generate extra separator', async () => {
   const content =
-    '---\nlang: en\ncompany_name: Some Company\ncompany_address_line1: Somewhere\njob_position: Developer\n---\n\nCurrently looking for a job my friend.';
+    '---\nlang: en\ncompany_name: Some Company\ncompany_address_line1: Somewhere\njob_position: Developer\n---\nCurrently looking for a job my friend.';
   const mkimp = await new MkImp({
     async frontMatter(content) {
       return jsyaml.load(content, {});
@@ -299,5 +300,15 @@ test('conditional rendering if branching nested', async () => {
   }).parse(content);
   expect(result).toEqual(
     '<p class="md-paragraph">This sentense may be visible.</p>'
+  );
+});
+
+test('Footnotes should be displayed correctly', async () => {
+  const content =
+    "Here's a simple note[^note].\n\n[^note]: This is the note of the page.\n";
+  const result = await new MkImp().parse(content);
+  console.log(result);
+  expect(result).toEqual(
+    '<p class="md-paragraph">Here&#39;s a simple note<sup id="fnref:note"><a class="md-link" href="#fn:note">[1]</a></sup>.</p><section class="md-footnotes"><ol class="md-fnlist" dir="auto"><li class="md-fnitem" id="fn:note"><p class="md-paragraph">This is the note of the page.</p></li></ol></section>'
   );
 });
